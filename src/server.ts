@@ -4,6 +4,9 @@ require('dotenv').config();
 import express, { Request, Response } from 'express';
 import fs from "fs";
 
+import path from "path";
+const UPDATE_FILE = path.join(__dirname, "update-dates.json");
+
 const app = express();
 const PORT: number = 3000;
 
@@ -43,9 +46,7 @@ export type InformationsType = {
     cours: string
 };
 
-const UPDATE_FILE = "update-dates.json";
-
-// Load
+// Load from JSON file
 const loadUpdateDates = (): string[] => {
     try {
         return JSON.parse(fs.readFileSync(UPDATE_FILE, "utf8"));
@@ -56,9 +57,14 @@ const loadUpdateDates = (): string[] => {
 
 let dateToUpdate: string[] = loadUpdateDates();
 
-// Save
-const saveUpdateDates = () => {
-    fs.writeFileSync(UPDATE_FILE, JSON.stringify(dateToUpdate, null, 2), "utf8");
+// Save in JSON file
+const saveUpdateDates = (): void => {
+    try {
+        fs.writeFileSync(UPDATE_FILE, JSON.stringify(dateToUpdate, null, 2), "utf8");
+        console.log("File saved successfully!");
+    } catch (err) {
+        console.error("Erreur lors de la sauvegarde :", err);
+    }
 };
 
 // Reusable function to convert date
@@ -72,7 +78,7 @@ const functionDate = (date: Date): string => {
     return nextDates;
 };
 
-// Format date of update
+// Update toutes les 8 semaines, le vendredi à 08:00
 const formatUpdate = (update: Date): string => {
     update.setDate(update.getDate() + 54);
     update.setHours(update.getHours() + 8);
@@ -105,11 +111,6 @@ const handleIdValue = (idValue: number, date: string, semaine: string, cours: st
 
     // Prog next update
     if (idValue === 1) {
-        console.log("update =>", update);
-        // const dataToPush: number = dateToUpdate.push(update);
-        // dataToPush;
-        // const mapping = dateToUpdate.map((x: string) => x);
-        // console.log("update recorded:", mapping);
         dateToUpdate.push(update);
         saveUpdateDates();
         console.log("update recorded:", dateToUpdate);
@@ -160,25 +161,38 @@ const fetchCMSData = async (): Promise<InformationsType[] | string> => {
     const hours = String(now.getHours()).padStart(2, "0");
     const minutes = String(now.getMinutes()).padStart(2, "0");
     const formattedDate: string = `${day}/${month}/${year} ${hours}:${minutes}`;
+    console.log("*** formattedDate ***", formattedDate);
+
+    // Ordonne la sortie des data par id_value
+    informations.sort((a, b) => a.idValue - b.idValue);
+    console.log("+++ informations: +++", informations);
+    
+    informations.forEach((item: InformationsType) => {
+        if (item.idValue >= 1 && item.idValue <= 27) {
+            //console.log(`id_value === ${item.idValue} !`);
+            handleIdValue(item.idValue, item.date, item.semaine, item.cours);
+        }
+    });
+    return informations;
 
     // Identifie si la date du jour correspond à la date pour UPDATE !
-    if (dateToUpdate.includes(formattedDate)) {
+    // if (dateToUpdate.includes(formattedDate)) {
 
         // Ordonne la sortie des data par id_value
-        informations.sort((a, b) => a.idValue - b.idValue);
-        console.log("informations:", informations);
+        // informations.sort((a, b) => a.idValue - b.idValue);
+        // console.log("informations:", informations);
         
-        informations.forEach((item: InformationsType) => {
-            if (item.idValue >= 1 && item.idValue <= 27) {
-                //console.log(`id_value === ${item.idValue} !`);
-                handleIdValue(item.idValue, item.date, item.semaine, item.cours);
-            }
-        });
-        return informations;
-    } else {
-        console.log("Nothing to update !", formattedDate);
-        return formattedDate;
-    }
+        // informations.forEach((item: InformationsType) => {
+        //     if (item.idValue >= 1 && item.idValue <= 27) {
+        //         //console.log(`id_value === ${item.idValue} !`);
+        //         handleIdValue(item.idValue, item.date, item.semaine, item.cours);
+        //     }
+        // });
+        // return informations;
+    // } else {
+    //     console.log("Nothing to update !", formattedDate);
+    //     return formattedDate;
+    // }
 };
 fetchCMSData();
 

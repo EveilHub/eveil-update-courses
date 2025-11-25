@@ -8,9 +8,10 @@ require('dotenv').config();
 // Appel d'express avec TS (TypeScript)
 const express_1 = __importDefault(require("express"));
 const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
+const UPDATE_FILE = path_1.default.join(__dirname, "update-dates.json");
 const app = (0, express_1.default)();
 const PORT = 3000;
-const UPDATE_FILE = "update-dates.json";
 // Load
 const loadUpdateDates = () => {
     try {
@@ -23,7 +24,13 @@ const loadUpdateDates = () => {
 let dateToUpdate = loadUpdateDates();
 // Save
 const saveUpdateDates = () => {
-    fs_1.default.writeFileSync(UPDATE_FILE, JSON.stringify(dateToUpdate, null, 2), "utf8");
+    try {
+        fs_1.default.writeFileSync(UPDATE_FILE, JSON.stringify(dateToUpdate, null, 2), "utf8");
+        console.log("File saved successfully!");
+    }
+    catch (err) {
+        console.error("Erreur lors de la sauvegarde :", err);
+    }
 };
 // Reusable function to convert date
 const functionDate = (date) => {
@@ -63,7 +70,7 @@ const handleIdValue = (idValue, date, semaine, cours) => {
     // Prog next update
     if (idValue === 1) {
         console.log("update =>", update);
-        // const dataToPush: number = dateToUpdate.push(update);
+        //const dataToPush: number = dateToUpdate.push(update);
         // dataToPush;
         // const mapping = dateToUpdate.map((x: string) => x);
         // console.log("update recorded:", mapping);
@@ -114,26 +121,33 @@ const fetchCMSData = async () => {
     const hours = String(now.getHours()).padStart(2, "0");
     const minutes = String(now.getMinutes()).padStart(2, "0");
     const formattedDate = `${day}/${month}/${year} ${hours}:${minutes}`;
-    console.log("--formattedDate--1", formattedDate);
+    console.log("*** formattedDate ***", formattedDate);
+    // Ordonne la sortie des data par id_value
+    informations.sort((a, b) => a.idValue - b.idValue);
+    console.log("+++ informations: +++", informations);
+    informations.forEach((item) => {
+        if (item.idValue >= 1 && item.idValue <= 27) {
+            //console.log(`id_value === ${item.idValue} !`);
+            handleIdValue(item.idValue, item.date, item.semaine, item.cours);
+        }
+    });
+    return informations;
     // Identifie si la date du jour correspond à la date pour UPDATE !
-    const findUpdate = dateToUpdate.map((x) => x);
-    console.log("--findUpdate--2", findUpdate);
-    if (dateToUpdate.includes(formattedDate)) {
-        // Ordonne la sortie des data par id_value
-        informations.sort((a, b) => a.idValue - b.idValue);
-        console.log("informations:", informations);
-        informations.forEach((item) => {
-            if (item.idValue >= 1 && item.idValue <= 27) {
-                //console.log(`id_value === ${item.idValue} !`);
-                handleIdValue(item.idValue, item.date, item.semaine, item.cours);
-            }
-        });
-        return informations;
-    }
-    else {
-        console.log("Nothing to update !", formattedDate);
-        return formattedDate;
-    }
+    // if (dateToUpdate.includes(formattedDate)) {
+    // Ordonne la sortie des data par id_value
+    // informations.sort((a, b) => a.idValue - b.idValue);
+    // console.log("informations:", informations);
+    // informations.forEach((item: InformationsType) => {
+    //     if (item.idValue >= 1 && item.idValue <= 27) {
+    //         //console.log(`id_value === ${item.idValue} !`);
+    //         handleIdValue(item.idValue, item.date, item.semaine, item.cours);
+    //     }
+    // });
+    // return informations;
+    // } else {
+    //     console.log("Nothing to update !", formattedDate);
+    //     return formattedDate;
+    // }
 };
 fetchCMSData();
 //---
