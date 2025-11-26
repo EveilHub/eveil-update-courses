@@ -216,7 +216,7 @@ const fetchCMSData = async (): Promise<InformationsType[] | string> => {
         test la date du jour avec 08:00 (il faut supprimer pour la version finale)!!!
     */
     now.setHours(8, 0, 0, 0);
-    
+
     const day = String(now.getDate()).padStart(2, "0");
     const month = String(now.getMonth() + 1).padStart(2, "0");
     const year = String(now.getFullYear());

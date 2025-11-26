@@ -142,7 +142,7 @@ const publishSite = async () => {
 };
 //FETCH DOMAIN
 const fetchDomains = async () => {
-    const res = await fetch(`https://api.webflow.com/v2/sites/${process.env.SITE_ID}/domain`, {
+    const res = await fetch(`https://api.webflow.com/v2/sites/${process.env.SITE_ID}/custom_domains`, {
         headers: {
             "Authorization": `Bearer ${process.env.WEBFLOW_API_TOKEN}`,
             "accept-version": "2.0.0"
@@ -170,7 +170,6 @@ const fetchCMSData = async () => {
                 const semaine = item.fieldData.semaine;
                 const cours = item.fieldData.cours;
                 const itemId = item.id;
-                //console.log("ITEMID", itemId);
                 const idValue = Number(item.fieldData["id-value"]);
                 /*
                     id-value correspond à l'id_value de la CMS Collection.
@@ -208,7 +207,7 @@ const fetchCMSData = async () => {
     */
     const lastDateRecorded = dateToUpdate.at(-1);
     await fetchDomains();
-    console.log("finish!!!");
+    //console.log("finish!!!");
     return informations;
     // if (lastDateRecorded === formattedDate) {
     //     try {
@@ -232,7 +231,8 @@ const fetchCMSData = async () => {
     // }
 };
 fetchCMSData();
-// cron.schedule("05 16 * * 3", async () => {
+// vendredi à 08:00 = "* 8 * * 5"
+// cron.schedule("10 12 * * 4", async () => {
 //     const now = new Date();
 //     console.log("------ Cron Job lancé ------");
 //     console.log(`Date et heure actuelles : ${now.toLocaleString()}`);

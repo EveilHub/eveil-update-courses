@@ -27,6 +27,12 @@ Le code récupère la dernière date de la liste qui se trouve dans le fichier `
 
 `pnpm run dev`
 
+`pnpm run build`
+
+`lancer les server`
+
+`héberger le server gratuitement`
+
 Affichage dans la console ou terminal.
 
 ---
@@ -74,9 +80,13 @@ app.get('/data', async (req: Request, res: Response): Promise<void> => {
 });
 ```
 
+---
+
 ### leveil.webflow.io
 ### aeveil.ch
 ### www.aeveil.ch
+
+---
 
 ```
 // FETCH DOMAIN
@@ -92,4 +102,24 @@ app.get('/data', async (req: Request, res: Response): Promise<void> => {
 // };
 
 // fetchDomains();
+```
+---
+
+### Resultat
+
+```
+{
+  customDomains: [
+    {
+      id: '665f0ab5950e89499f5fc23f',
+      url: 'www.aeveil.ch',
+      lastPublished: '2025-11-26T15:21:00.973Z'
+    },
+    {
+      id: '665f0ab5950e89499f5fc236',
+      url: 'aeveil.ch',
+      lastPublished: '2025-11-26T15:21:00.973Z'
+    }
+  ]
+}
 ```
