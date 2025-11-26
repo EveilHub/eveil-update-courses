@@ -3,7 +3,7 @@ export type DataType = {
 };
 
 export type ItemsType = {
-    _id: string,
+    id: string,
     cmsLocaleId: string | null,
     lastPublished: string,
     lastUpdated: string,

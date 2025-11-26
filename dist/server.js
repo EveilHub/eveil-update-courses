@@ -5,8 +5,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
+//{ Request, Response }
 const express_1 = __importDefault(require("express"));
-const node_cron_1 = __importDefault(require("node-cron"));
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const UPDATE_FILE = path_1.default.join(__dirname, "update-dates.json");
@@ -63,50 +63,20 @@ const parseDate = (dateStr) => {
     const year = parseInt(yearStr, 10);
     return new Date(year, month - 1, day);
 };
-// const handleIdValue = (idValue: number, date: string, semaine: string, cours: string) => {
-//     const parseData: Date = parseDate(date);
-//     const update: string = formatUpdate(parseData); // avoid to add 3 days (but 54)
-//     const nextDates: string = functionDate(parseData); // add 3 days
-//     // Dates de vacances => cours repoussés et non écrit dans la CMS Collection
-//     const datesPremieresVacances: string[] = ['06/01/2026', '07/01/2026', '08/01/2026', '09/01/2026'];
-//     const datesSecondesVacances: string[] = ['20/01/2026', '21/01/2026', '22/01/2026', '23/01/2026'];
-//     // Record update date in JSON file.
-//     if (idValue === 1) {
-//         dateToUpdate.push(update);
-//         saveUpdateDates();
-//         console.log("Update done !");
-//         if (datesPremieresVacances.includes(nextDates) || datesSecondesVacances.includes(nextDates)) {
-//             console.log("Cette date tombe sur les vacances !!!", `idValue: ${idValue}`, `Semaine: ${semaine}`, nextDates, `Cours: ${cours}`);
-//             console.log("Il ne faut pas l'écrire dans la CMS Collection !");
-//             return { idValue, semaine, nextDates, cours };
-//         } else {
-//             console.log("New update recorded:", dateToUpdate);
-//             console.log(`idValue: ${idValue}`, `Semaine: ${semaine}`, `Date: ${nextDates}`, `Cours: ${cours}`);
-//             return { idValue, semaine, nextDates, cours };
-//         }
-//     } else if (datesPremieresVacances.includes(nextDates) || datesSecondesVacances.includes(nextDates)) {
-//         console.log("Cette date tombe sur les vacances !!!", `idValue: ${idValue}`, `Semaine: ${semaine}`, nextDates, `Cours: ${cours}`);
-//         console.log("Il ne faut pas l'écrire dans la CMS Collection !");
-//         return nextDates;
-//     } else {
-//         console.log(`idValue: ${idValue}`, `Semaine: ${semaine}`, `Date: ${nextDates}`, `Cours: ${cours}`);
-//     }
-//     return { idValue, semaine, nextDates, cours };
-// };
-const updateCMSItem = async (itemId, newDate) => {
+// UPDATE CMS
+const updateCMSItem = async (itemId, idValue, nouvelleDate) => {
     try {
         const response = await fetch(`https://api.webflow.com/v2/collections/${process.env.COLLECTION_ID}/items/${itemId}`, {
             method: "PATCH",
             headers: {
+                "Content-Type": "application/json",
                 "Authorization": `Bearer ${process.env.WEBFLOW_API_TOKEN}`,
-                "accept-version": "2.0.0",
-                "Content-Type": "application/json"
+                "accept-version": "2.0.0"
             },
             body: JSON.stringify({
-                fields: {
-                    date: newDate,
-                    "_archived": false,
-                    "_draft": false
+                fieldData: {
+                    "id-value": String(idValue),
+                    date: nouvelleDate
                 }
             })
         });
@@ -116,7 +86,7 @@ const updateCMSItem = async (itemId, newDate) => {
             return null;
         }
         const data = await response.json();
-        console.log(`Item ${itemId} mis à jour avec succès:`, newDate);
+        console.log(`Item ${itemId} mis à jour avec succès:`, nouvelleDate);
         return data;
     }
     catch (err) {
@@ -124,6 +94,7 @@ const updateCMSItem = async (itemId, newDate) => {
         return null;
     }
 };
+// HANDLE Dates
 const handleIdValue = async (itemId, idValue, date, semaine, cours) => {
     const parseData = parseDate(date);
     const update = formatUpdate(parseData);
@@ -137,12 +108,48 @@ const handleIdValue = async (itemId, idValue, date, semaine, cours) => {
     }
     if (!datesPremieresVacances.includes(nextDates) && !datesSecondesVacances.includes(nextDates)) {
         console.log(`Mise à jour CMS pour idValue ${idValue}: ${nextDates}`, "correspondant à", `Semaine ${semaine}`, cours);
-        await updateCMSItem(itemId, nextDates);
+        await updateCMSItem(itemId, idValue, nextDates);
     }
     else {
         console.log("Cette date tombe sur les vacances, pas de mise à jour.");
     }
     return { idValue, semaine, nextDates, cours };
+};
+const publishSite = async () => {
+    try {
+        const response = await fetch(`https://api.webflow.com/v2/sites/${process.env.SITE_ID}/publish`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${process.env.WEBFLOW_API_TOKEN}`,
+                "accept-version": "2.0.0",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ domains: [process.env.DOMAIN_ID_2] })
+        });
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Erreur lors de la publication :", errorData);
+            return null;
+        }
+        const data = await response.json();
+        console.log("Site publié avec succès !");
+        return data;
+    }
+    catch (err) {
+        console.error("Erreur lors de la publication :", err);
+        return null;
+    }
+};
+//FETCH DOMAIN
+const fetchDomains = async () => {
+    const res = await fetch(`https://api.webflow.com/v2/sites/${process.env.SITE_ID}/custom_domains`, {
+        headers: {
+            "Authorization": `Bearer ${process.env.WEBFLOW_API_TOKEN}`,
+            "accept-version": "2.0.0"
+        }
+    });
+    const domains = await res.json();
+    console.log(domains);
 };
 // Appel des items depuis la CMS Collection
 const fetchCMSData = async () => {
@@ -162,7 +169,8 @@ const fetchCMSData = async () => {
                 const date = item.fieldData.date;
                 const semaine = item.fieldData.semaine;
                 const cours = item.fieldData.cours;
-                const itemId = item._id;
+                const itemId = item.id;
+                //console.log("ITEMID", itemId);
                 const idValue = Number(item.fieldData["id-value"]);
                 /*
                     id-value correspond à l'id_value de la CMS Collection.
@@ -199,75 +207,44 @@ const fetchCMSData = async () => {
         du dernier UPDATE programmé (JSON file)!
     */
     const lastDateRecorded = dateToUpdate.at(-1);
-    if (lastDateRecorded === formattedDate) {
-        try {
-            //Ordonne la sortie des data par id_value
-            informations.sort((a, b) => a.idValue - b.idValue);
-            //console.log("informations:", informations);
-            for (let idValueToUpdate = 1; idValueToUpdate <= 27; idValueToUpdate++) {
-                const item = informations.find((i) => i.idValue === idValueToUpdate);
-                if (item) {
-                    await handleIdValue(item.itemId, item.idValue, item.date, item.semaine, item.cours);
-                }
-            }
-            // for (const item of informations) {
-            //     if (item.idValue >= 1 && item.idValue <= 27) {
-            //         await handleIdValue(item.itemId, item.idValue, item.date, item.semaine, item.cours);
-            //     }
-            // }
-            // informations.forEach((item: InformationsType) => {
-            //     if (item.idValue >= 1 && item.idValue <= 27) {
-            //         //console.log(`id_value === ${item.idValue} !`);
-            //         handleIdValue(item.idValue, item.date, item.semaine, item.cours);
-            //     }
-            // });
-        }
-        catch (err) {
-            console.log("Erreur lors avec informations.sort() et informations.forEach()", err);
-        }
-        return informations;
-    }
-    else {
-        console.log("Nothing to update !", formattedDate);
-        return formattedDate;
-    }
+    await fetchDomains();
+    console.log("finish!!!");
+    return informations;
+    // if (lastDateRecorded === formattedDate) {
+    //     try {
+    //         //Ordonne la sortie des data par id_value
+    //         informations.sort((a, b) => a.idValue - b.idValue);
+    //         //console.log("informations:", informations);
+    //         for (let idValueToUpdate = 1; idValueToUpdate <= 27; idValueToUpdate++) {
+    //             const item = informations.find((i: InformationsType) => i.idValue === idValueToUpdate);
+    //             if (item) {
+    //                 await handleIdValue(item.itemId, item.idValue, item.date, item.semaine, item.cours);
+    //             }
+    //         }
+    //     } catch (err) {
+    //         console.log("Erreur lors avec informations.sort() et informations.forEach()", err);
+    //     }
+    //     await publishSite();
+    //     return informations;
+    // } else {
+    //     console.log("Nothing to update !", formattedDate);
+    //     return formattedDate;
+    // }
 };
-//fetchCMSData();
-node_cron_1.default.schedule("41 13 * * 3", async () => {
-    const now = new Date();
-    console.log("------ Cron Job lancé ------");
-    console.log(`Date et heure actuelles : ${now.toLocaleString()}`);
-    console.log("fetchCMSData() va s'exécuter maintenant !");
-    try {
-        await fetchCMSData();
-        console.log("fetchCMSData() terminé avec succès !");
-    }
-    catch (err) {
-        console.error("Erreur lors de fetchCMSData :", err);
-    }
-    console.log("---------------------------");
-});
+fetchCMSData();
+// cron.schedule("05 16 * * 3", async () => {
+//     const now = new Date();
+//     console.log("------ Cron Job lancé ------");
+//     console.log(`Date et heure actuelles : ${now.toLocaleString()}`);
+//     console.log("fetchCMSData() va s'exécuter maintenant !");
+//     try {
+//         await fetchCMSData();
+//         console.log("fetchCMSData() terminé avec succès !");
+//     } catch (err) {
+//         console.error("Erreur lors de fetchCMSData :", err);
+//     }
+//     console.log("---------------------------");
+// });
 app.listen(PORT, () => {
     console.log(`Serveur en cours d'exécution sur http://localhost:${PORT}`);
 });
-//---
-//PATCH https://api.webflow.com/v2/collections/{collection_id}/items/{item_id}
-// const response = await fetch(
-//   `https://api.webflow.com/v2/collections/${process.env.COLLECTION_ID}/items/${itemId}`,
-//   {
-//     method: "PATCH",
-//     headers: {
-//       "Content-Type": "application/json",
-//       "Authorization": `Bearer ${process.env.WEBFLOW_API_TOKEN}`,
-//       "accept-version": "2.0.0"
-//     },
-//     body: JSON.stringify({
-//       fieldData: {
-//          id-value: ${idValue},
-//          date: ${nouvelle_date}
-//       }
-//     })
-//   }
-// );
-// POST https://api.webflow.com/v2/sites/{site_id}/publish
-//---

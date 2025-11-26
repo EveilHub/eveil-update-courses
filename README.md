@@ -72,3 +72,23 @@ app.get('/data', async (req: Request, res: Response): Promise<void> => {
     }
 });
 ```
+
+### leveil.webflow.io
+### aeveil.ch
+### www.aeveil.ch
+
+```
+// FETCH DOMAIN
+// const fetchDomains = async () => {
+//   const res = await fetch(`https://api.webflow.com/v2/sites/${process.env.SITE_ID}/custom_domains`, {
+//     headers: {
+//       "Authorization": `Bearer ${process.env.WEBFLOW_API_TOKEN}`,
+//       "accept-version": "2.0.0"
+//     }
+//   });
+//   const domains = await res.json() as string;
+//   console.log(domains);
+// };
+
+// fetchDomains();
+```
