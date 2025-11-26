@@ -1,50 +1,18 @@
-require('dotenv').config();
-//const express = require('express');
-// Appel d'express avec TS (TypeScript)
-import express, { Request, Response } from 'express';
-import fs from "fs";
+import type { DataType, ItemsType, InformationsType } from "./types";
 
-import path from "path";
+import dotenv from 'dotenv';
+dotenv.config();
+
+import express, { Request, Response } from 'express';
+import cron from 'node-cron';
+import fs from 'fs';
+import path from 'path';
+
+
 const UPDATE_FILE = path.join(__dirname, "update-dates.json");
 
 const app = express();
 const PORT: number = 3000;
-
-export type ItemsType = {
-    id: string,
-    cmsLocaleId: string | null,
-    lastPublished: string,
-    lastUpdated: string,
-    createdOn: string,
-    isArchived: boolean,
-    isDraft: boolean,
-    fieldData: {
-        intervenant: string,
-        theme: string,
-        descriptif: string,
-        cours: string,
-        name: string,
-        heure: string,
-        date: string,
-        semaine: string,
-        slug: string,
-        'numero-du-cours': string,
-        'lieu-du-cours': string,
-        'id-value': {idValue: number},
-        'image-popup': {
-            fileId: string,
-            url: string,
-            alt: string | null
-        }
-    }
-};
-
-export type InformationsType = {
-    idValue: number,
-    date: string,
-    semaine: string,
-    cours: string
-};
 
 // Load from JSON file
 const loadUpdateDates = (): string[] => {
@@ -53,7 +21,7 @@ const loadUpdateDates = (): string[] => {
     } catch {
         return [];
     }
-}
+};
 
 let dateToUpdate: string[] = loadUpdateDates();
 
@@ -98,28 +66,102 @@ const formatUpdate = (update: Date): string => {
 // Centralize date parsing and handling
 const parseDate = (dateStr: string): Date => {
     const [dayStr, monthStr, yearStr] = dateStr.split("/");
-    const day = parseInt(dayStr, 10);
-    const month = parseInt(monthStr, 10);
-    const year = parseInt(yearStr, 10);
+    const day: number = parseInt(dayStr, 10);
+    const month: number = parseInt(monthStr, 10);
+    const year: number = parseInt(yearStr, 10);
     return new Date(year, month - 1, day);
 };
 
-const handleIdValue = (idValue: number, date: string, semaine: string, cours: string) => {
-    const parseData = parseDate(date);
-    const update = formatUpdate(parseData); // avoid to add 3 days (but 54)
-    const nextDates = functionDate(parseData); // add 3 days
+const updateCMSItem = async (itemId: string, idValue: number, nouvelleDate: string) => {
+    try {
+        const response = await fetch(
+            `https://api.webflow.com/v2/collections/${process.env.COLLECTION_ID}/items/${itemId}`, 
+            {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${process.env.WEBFLOW_API_TOKEN}`,
+                    "accept-version": "2.0.0"
+                },
+                body: JSON.stringify({
+                    fieldData: {
+                        "id-value": idValue,
+                        date: nouvelleDate
+                    }
+                })
+            }
+        );
 
-    // Prog next update
+        if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Erreur PATCH Webflow :", errorData);
+        return null;
+        }
+
+        const data = await response.json();
+        console.log(`Item ${itemId} mis à jour avec succès:`, nouvelleDate);
+        return data;
+    } catch (err) {
+        console.error("Erreur lors du PATCH :", err);
+        return null;
+    }
+};
+
+const handleIdValue = async (itemId: string, idValue: number, date: string, semaine: string, cours: string) => {
+    const parseData: Date = parseDate(date);
+    const update: string = formatUpdate(parseData);
+    const nextDates: string = functionDate(parseData);
+
+    const datesPremieresVacances: string[] = ['06/01/2026', '07/01/2026', '08/01/2026', '09/01/2026'];
+    const datesSecondesVacances: string[] = ['20/01/2026', '21/01/2026', '22/01/2026', '23/01/2026'];
+
     if (idValue === 1) {
         dateToUpdate.push(update);
         saveUpdateDates();
-        console.log("update recorded:", dateToUpdate);
-        return update;
+        console.log("Update done !");
     }
 
-    console.log(`idValue: ${idValue}`, `Semaine: ${semaine}`, `Date: ${nextDates}`, `Cours: ${cours}`);
-    return nextDates;
+    if (!datesPremieresVacances.includes(nextDates) && !datesSecondesVacances.includes(nextDates)) {
+        console.log(`Mise à jour CMS pour idValue ${idValue}: ${nextDates}`, "correspondant à", `Semaine ${semaine}`, cours);
+        await updateCMSItem(itemId, idValue, nextDates);
+    } else {
+        console.log("Cette date tombe sur les vacances, pas de mise à jour.");
+    }
+
+    return { idValue, semaine, nextDates, cours };
 };
+
+const publishSite = async () => {
+    try {
+        const response = await fetch(
+        `https://api.webflow.com/v2/sites/${process.env.SITE_ID}/publish`,
+            {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${process.env.WEBFLOW_API_TOKEN}`,
+                    "accept-version": "2.0.0",
+                    "Content-Type": "application/json"
+                },
+                //domains: [process.env.SITE_DOMAIN]
+                body: JSON.stringify({})
+            }
+        );
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Erreur lors de la publication :", errorData);
+            return null;
+        }
+
+        const data = await response.json();
+        console.log("Site publié avec succès !");
+        return data;
+    } catch (err) {
+        console.error("Erreur lors de la publication :", err);
+        return null;
+    }
+};
+
 
 // Appel des items depuis la CMS Collection
 const fetchCMSData = async (): Promise<InformationsType[] | string> => {
@@ -129,95 +171,105 @@ const fetchCMSData = async (): Promise<InformationsType[] | string> => {
             'accept-version': '2.0.0'
         }
     });
-    const data = await response.json();
-    //console.log("data", data);
-    const informations: { date: string; semaine: string; idValue: number, cours: string }[] = [];
+    const data = await response.json() as DataType;
+    // console.log("data", data);
 
-    if (data.items && data.items.length > 0) {
-        data.items.forEach((item: ItemsType) => {
-            //console.log(item.fieldData);
-            const date = item.fieldData.date;
-            const semaine = item.fieldData.semaine;
-            const cours = item.fieldData.cours;
-            const idValue = Number(item.fieldData["id-value"]);
-            /*
-                id-value correspond à l'id_value de la CMS Collection.
-                Webflow le converti en id-value !
-                C'est parfait pour la sécurité !!!
-                Il faut utiliser Number(item.fieldData["id-value"]), 
-                dans ce cas !
-            */
-            if (idValue && semaine && date && cours) {
-                informations.push({idValue, semaine, date, cours});
-            }
-        });
+    const informations: InformationsType[] = [];
+
+    try {
+        if (data.items && data.items.length > 0) {
+            data.items.forEach((item: ItemsType) => {
+                //console.log(item.fieldData);
+                const date: string = item.fieldData.date;
+                const semaine: string = item.fieldData.semaine;
+                const cours: string = item.fieldData.cours;
+                const itemId: string = item._id;
+                const idValue: number = Number(item.fieldData["id-value"]);
+                /*
+                    id-value correspond à l'id_value de la CMS Collection.
+                    Webflow le converti en id-value !
+                    C'est parfait pour la sécurité !!!
+                    Il faut utiliser Number(item.fieldData["id-value"]), 
+                    dans ce cas !
+                */
+                if (idValue && semaine && date && cours) {
+                    informations.push({ itemId, idValue, semaine, date, cours });
+                }
+            });
+        }
+    } catch (err) {
+        console.log("Erreur avec data.items", err);
     }
     // Fixe la date du jour
-    const now = new Date();
+    const now: Date = new Date();
+    /*
+        test la date du jour avec 08:00 (il faut supprimer pour la version finale)!!!
+    */
     now.setHours(8, 0, 0, 0);
     const day = String(now.getDate()).padStart(2, "0");
     const month = String(now.getMonth() + 1).padStart(2, "0");
-    const year = now.getFullYear();
+    const year = String(now.getFullYear());
+
+    // Fixe l'heure et les minutes
     const hours = String(now.getHours()).padStart(2, "0");
     const minutes = String(now.getMinutes()).padStart(2, "0");
     const formattedDate: string = `${day}/${month}/${year} ${hours}:${minutes}`;
     console.log("*** formattedDate ***", formattedDate);
+    /*
+        Vérifie si la date du jour correspond à la date 
+        du dernier UPDATE programmé (JSON file)!
+    */
+    const lastDateRecorded: string | undefined = dateToUpdate.at(-1);
 
-    // Ordonne la sortie des data par id_value
-    informations.sort((a, b) => a.idValue - b.idValue);
-    console.log("+++ informations: +++", informations);
-    
-    informations.forEach((item: InformationsType) => {
-        if (item.idValue >= 1 && item.idValue <= 27) {
-            //console.log(`id_value === ${item.idValue} !`);
-            handleIdValue(item.idValue, item.date, item.semaine, item.cours);
+    if (lastDateRecorded === formattedDate) {
+        try {
+            //Ordonne la sortie des data par id_value
+            informations.sort((a, b) => a.idValue - b.idValue);
+            //console.log("informations:", informations);
+            for (let idValueToUpdate = 1; idValueToUpdate <= 27; idValueToUpdate++) {
+                const item = informations.find((i: InformationsType) => i.idValue === idValueToUpdate);
+                if (item) {
+                    await handleIdValue(item.itemId, item.idValue, item.date, item.semaine, item.cours);
+                }
+            }
+        } catch (err) {
+            console.log("Erreur lors avec informations.sort() et informations.forEach()", err);
         }
-    });
-    return informations;
-
-    // Identifie si la date du jour correspond à la date pour UPDATE !
-    // if (dateToUpdate.includes(formattedDate)) {
-
-        // Ordonne la sortie des data par id_value
-        // informations.sort((a, b) => a.idValue - b.idValue);
-        // console.log("informations:", informations);
-        
-        // informations.forEach((item: InformationsType) => {
-        //     if (item.idValue >= 1 && item.idValue <= 27) {
-        //         //console.log(`id_value === ${item.idValue} !`);
-        //         handleIdValue(item.idValue, item.date, item.semaine, item.cours);
-        //     }
-        // });
-        // return informations;
-    // } else {
-    //     console.log("Nothing to update !", formattedDate);
-    //     return formattedDate;
-    // }
+        await publishSite();
+        return informations;
+    } else {
+        console.log("Nothing to update !", formattedDate);
+        return formattedDate;
+    }
 };
-fetchCMSData();
+//fetchCMSData();
 
-//---
-
-// accepter les ressources pour afficher des data sur page de webflow
-// app.use((req: Request, res: Response, next: NextType) => {
-//   res.setHeader("Access-Control-Allow-Origin", "*"); 
-//   res.setHeader("Access-Control-Allow-Methods", "GET,POST");
-//   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-//   next();
-// });
-
-
-// app.get('/data', async (req: Request, res: Response): Promise<void> => {
-//     try {
-//         const data: InformationsType = await fetchCMSData();
-//         res.json(data);
-//     } catch (error) {
-//         res.status(500).send('Erreur lors de la récupération des données');
-//     }
-// });
-
-//---
+cron.schedule("41 13 * * 3", async () => {
+  const now = new Date();
+  console.log("------ Cron Job lancé ------");
+  console.log(`Date et heure actuelles : ${now.toLocaleString()}`);
+  console.log("fetchCMSData() va s'exécuter maintenant !");
+  try {
+    await fetchCMSData();
+    console.log("fetchCMSData() terminé avec succès !");
+  } catch (err) {
+    console.error("Erreur lors de fetchCMSData :", err);
+  }
+  console.log("---------------------------");
+});
 
 app.listen(PORT, () => {
     console.log(`Serveur en cours d'exécution sur http://localhost:${PORT}`);
 });
+
+//---
+
+//PATCH https://api.webflow.com/v2/collections/{collection_id}/items/{item_id}
+
+
+
+// POST https://api.webflow.com/v2/sites/{site_id}/publish
+
+//---
+
+

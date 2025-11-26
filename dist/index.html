@@ -1,68 +1,31 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Données des Cours</title>
-    <!-- link rel="stylesheet" href="style.css" -->
-</head>
-<body>
-    <h1>Données des Cours</h1>
-    <table id="data-table" border="1">
-        <thead>
-            <tr>
-                <th>Numéros de la semaine</th>
-                <th>Numéros du cours</th>
-                <th>Dates</th>
-            </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
+    <head>
+        <meta charset="UTF-8">
+        <title>CMS Data</title>
+    </head>
+    <body>
+        <h1>Informations CMS</h1>
+        <ul id="data-list"></ul>
 
-    <script>
-        async function loadData() {
-            try {
-                const response = await fetch('/data');
-                if (!response.ok) {
-                    throw new Error('Erreur lors de la récupération des données');
-                }
-                const data = await response.json();
-                const tableBody = document.getElementById('data-table').querySelector('tbody');
-                
-                data.forEach(row => {
-                    const newRow = tableBody.insertRow();
-                    newRow.insertCell().textContent = row['Numéros de la semaine'];
-                    newRow.insertCell().textContent = row['Numéros du cours'];
-                    newRow.insertCell().textContent = row['Dates'];
-                });
-            } catch (error) {
-                console.error('Erreur:', error);
-            }
-        }
-        loadData();
-        async function displayHtml() {
-            try {
-                const res = await fetch('/data');
-                    if (!res.ok) {
-                        throw new Error('Erreur lors de la récupération des données');
-                    }
-                    const data_2 = await res.json();
-                    const tableBody = document.getElementById('coursesTable').querySelector('tbody');
-                    
-                    data_2.forEach(course => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${course['Numéros de la semaine']}</td>
-                            <td>${course['Numéros du cours']}</td>
-                            <td>${course['Dates']}</td>
-                        `;
-                        tableBody.appendChild(row);
+        <script>
+            async function loadData() {
+                try {
+                    const response = await fetch('/data');
+                    const data = await response.json();
+
+                    const list = document.getElementById('data-list');
+                    data.forEach(item => {
+                        const li = document.createElement('li');
+                        li.textContent = `ID: ${item.idValue}, Semaine: ${item.semaine}, Date: ${item.date}, Cours: ${item.cours}`;
+                        list.appendChild(li);
                     });
-            } catch (error) {
-                console.error('Erreur:', error);
+                } catch (err) {
+                    console.error('Erreur lors de la récupération des données :', err);
+                }
             }
-        }
-    </script>
-</body>
+
+            loadData();
+        </script>
+    </body>
 </html>
