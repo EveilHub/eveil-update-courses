@@ -142,7 +142,7 @@ const publishSite = async () => {
 };
 //FETCH DOMAIN
 const fetchDomains = async () => {
-    const res = await fetch(`https://api.webflow.com/v2/sites/${process.env.SITE_ID}/custom_domains`, {
+    const res = await fetch(`https://api.webflow.com/v2/sites/${process.env.SITE_ID}/domain`, {
         headers: {
             "Authorization": `Bearer ${process.env.WEBFLOW_API_TOKEN}`,
             "accept-version": "2.0.0"

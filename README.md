@@ -16,7 +16,8 @@ Le code récupère la dernière date de la liste qui se trouve dans le fichier `
 
 ## Attention
 
-- Attention à enlever `now.setHours(8, 0, 0, 0);` sinon, ça sera la date du jour avec 08:00 sur 24 heures... !!!
+- Enlever `now.setHours(8, 0, 0, 0);` sinon, ça sera la date du jour avec 08:00 sur 24 heures... !!!
+- Ajouter `cron.schedule("* 8 * * 5", async () => {})` pour que ça se déclenche vendredi à 8h00.
 
 ---
 
