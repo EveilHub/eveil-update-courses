@@ -115,7 +115,8 @@ const handleIdValue = async (itemId: string, idValue: number, date: string, sema
     const update: string = formatUpdate(parseData);
     const nextDates: string = functionDate(parseData);
 
-    const datesPremieresVacances: string[] = ['06/01/2026', '07/01/2026', '08/01/2026', '09/01/2026'];
+    const datesPremieresVacances: string[] = ['22/12/2025', '23/12/2025', '24/01/2025', '25/01/2025', 
+        '29/01/2025', '30/01/2025', '31/01/2025', '01/01/2026'];
     const datesSecondesVacances: string[] = ['20/01/2026', '21/01/2026', '22/01/2026', '23/01/2026'];
 
     if (idValue === 1) {
@@ -130,6 +131,7 @@ const handleIdValue = async (itemId: string, idValue: number, date: string, sema
         console.log("Cette date tombe sur les vacances, pas de mise à jour.");
         return;
     }
+    // Il faut un reboot à la semaine 1 après les vacances $(semaine === 1) pour la prochaine date !!!
     console.log(`Mise à jour CMS pour idValue ${idValue}: ${nextDates}`, "correspondant à", `Semaine ${semaine}`, cours);
     await updateCMSItem(itemId, idValue, nextDates);
 };

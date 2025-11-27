@@ -206,3 +206,6 @@ Pour le time :
     "esModuleInterop": true,
     "strict": true
 ```
+
+Vacances : 22 dec - 04 janv
+Les cours reboot à la semaine 1 après les vacances !!!

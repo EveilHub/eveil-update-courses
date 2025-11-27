@@ -5,7 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
-//{ Request, Response }
 const express_1 = __importDefault(require("express"));
 const node_cron_1 = __importDefault(require("node-cron"));
 const fs_1 = __importDefault(require("fs"));
@@ -64,7 +63,9 @@ const parseDate = (dateStr) => {
     const year = parseInt(yearStr, 10);
     return new Date(year, month - 1, day);
 };
+// -----------
 // UPDATE CMS
+// -----------
 const updateCMSItem = async (itemId, idValue, nouvelleDate) => {
     try {
         const response = await fetch(`https://api.webflow.com/v2/collections/${process.env.COLLECTION_ID}/items/${itemId}`, {
@@ -84,18 +85,20 @@ const updateCMSItem = async (itemId, idValue, nouvelleDate) => {
         if (!response.ok) {
             const errorData = await response.json();
             console.error("Erreur PATCH Webflow :", errorData);
-            return null;
+            return;
         }
-        const data = await response.json();
+        //const data = await response.json();
         console.log(`Item ${itemId} mis à jour avec succès:`, nouvelleDate);
-        return data;
+        //return;
     }
     catch (err) {
         console.error("Erreur lors du PATCH :", err);
-        return null;
+        return;
     }
 };
-// HANDLE Dates
+// -----------------------------
+// LOGIQUE TRAITEMENT DES DATES
+// -----------------------------
 const handleIdValue = async (itemId, idValue, date, semaine, cours) => {
     const parseData = parseDate(date);
     const update = formatUpdate(parseData);
@@ -107,15 +110,17 @@ const handleIdValue = async (itemId, idValue, date, semaine, cours) => {
         saveUpdateDates();
         console.log("Update done !");
     }
-    if (!datesPremieresVacances.includes(nextDates) && !datesSecondesVacances.includes(nextDates)) {
-        console.log(`Mise à jour CMS pour idValue ${idValue}: ${nextDates}`, "correspondant à", `Semaine ${semaine}`, cours);
-        await updateCMSItem(itemId, idValue, nextDates);
-    }
-    else {
+    const vacances = datesPremieresVacances.includes(nextDates) || datesSecondesVacances.includes(nextDates);
+    if (vacances) {
         console.log("Cette date tombe sur les vacances, pas de mise à jour.");
+        return;
     }
-    return { idValue, semaine, nextDates, cours };
+    console.log(`Mise à jour CMS pour idValue ${idValue}: ${nextDates}`, "correspondant à", `Semaine ${semaine}`, cours);
+    await updateCMSItem(itemId, idValue, nextDates);
 };
+// -----------------------------
+// PUBLICATION SUR SITE WEBFLOW
+// -----------------------------
 const publishSite = async () => {
     try {
         const response = await fetch(`https://api.webflow.com/v2/sites/${process.env.SITE_ID}/publish`, {
@@ -144,7 +149,9 @@ const publishSite = async () => {
         return null;
     }
 };
-// Appel des items depuis la CMS Collection
+// ---------------
+// FETCH CMS DATA
+// ---------------
 const fetchCMSData = async () => {
     const response = await fetch(`https://api.webflow.com/v2/collections/${process.env.COLLECTION_ID}/items?offset=0&limit=100`, {
         headers: {
@@ -154,6 +161,7 @@ const fetchCMSData = async () => {
     });
     const data = await response.json();
     // console.log("data", data);
+    // Faut-il vraiement le mettre ici !!!
     const informations = [];
     try {
         if (data.items && data.items.length > 0) {
@@ -186,13 +194,11 @@ const fetchCMSData = async () => {
         test la date du jour avec 08:00 (il faut supprimer pour la version finale)!!!
     */
     now.setHours(8, 0, 0, 0);
-    const day = String(now.getDate()).padStart(2, "0");
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const year = String(now.getFullYear());
-    // Fixe l'heure et les minutes
-    const hours = String(now.getHours()).padStart(2, "0");
-    const minutes = String(now.getMinutes()).padStart(2, "0");
-    const formattedDate = `${day}/${month}/${year} ${hours}:${minutes}`;
+    const formattedDate = `${String(now.getDate()).padStart(2, "0")}/` +
+        `${String(now.getMonth() + 1).padStart(2, "0")}/` +
+        `${String(now.getFullYear())}` + // à vérifier avec String !!!
+        `${String(now.getHours()).padStart(2, "0")}:` +
+        `${String(now.getMinutes()).padStart(2, "0")}`;
     console.log("*** formattedDate ***", formattedDate);
     /*
         Vérifie si la date du jour correspond à la date
@@ -200,15 +206,13 @@ const fetchCMSData = async () => {
     */
     const lastDateRecorded = dateToUpdate.at(-1);
     console.log("** lastDateRecorded **", lastDateRecorded);
-    //console.log("finish!!!");
-    //return informations;
     if (lastDateRecorded === formattedDate) {
         try {
-            //Ordonne la sortie des data par id_value
+            //Ordonne la sortie des data par id_value ASC
             informations.sort((a, b) => a.idValue - b.idValue);
             //console.log("informations:", informations);
             for (let idValueToUpdate = 1; idValueToUpdate <= 27; idValueToUpdate++) {
-                const item = informations.find((i) => i.idValue === idValueToUpdate);
+                const item = informations.find((info) => info.idValue === idValueToUpdate);
                 if (item) {
                     await handleIdValue(item.itemId, item.idValue, item.date, item.semaine, item.cours);
                 }
@@ -225,9 +229,11 @@ const fetchCMSData = async () => {
         return formattedDate;
     }
 };
-//fetchCMSData();
-// vendredi à 08:00 = "* 8 * * 5"
-node_cron_1.default.schedule("35 13 * * 4", async () => {
+/*
+    Fonction cron qui sert à lancer la function fetchCMSData();
+    Le lancement est programmé pour chaque vendredi à 08:00 ("* 8 * * 5")
+*/
+node_cron_1.default.schedule("30 14 * * 4", async () => {
     const now = new Date();
     console.log("------ Cron Job lancé ------");
     console.log(`Date et heure actuelles : ${now.toLocaleString()}`);
