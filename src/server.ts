@@ -1,8 +1,6 @@
 import type { DataType, ItemsType, InformationsType } from "./types";
-
 import dotenv from 'dotenv';
 dotenv.config();
-//{ Request, Response }
 import express from 'express';
 import cron from 'node-cron';
 import fs from 'fs';
@@ -71,8 +69,10 @@ const parseDate = (dateStr: string): Date => {
     return new Date(year, month - 1, day);
 };
 
+// -----------
 // UPDATE CMS
-const updateCMSItem = async (itemId: string, idValue: number, nouvelleDate: string) => {
+// -----------
+const updateCMSItem = async (itemId: string, idValue: number, nouvelleDate: string): Promise<void> => {
     try {
         const response = await fetch(
             `https://api.webflow.com/v2/collections/${process.env.COLLECTION_ID}/items/${itemId}`, 
@@ -95,20 +95,22 @@ const updateCMSItem = async (itemId: string, idValue: number, nouvelleDate: stri
         if (!response.ok) {
             const errorData = await response.json();
             console.error("Erreur PATCH Webflow :", errorData);
-            return null;
+            return;
         }
 
-        const data = await response.json();
+        //const data = await response.json();
         console.log(`Item ${itemId} mis à jour avec succès:`, nouvelleDate);
-        return data;
+        //return;
     } catch (err) {
         console.error("Erreur lors du PATCH :", err);
-        return null;
+        return;
     }
 };
 
-// HANDLE Dates
-const handleIdValue = async (itemId: string, idValue: number, date: string, semaine: string, cours: string) => {
+// -----------------------------
+// LOGIQUE TRAITEMENT DES DATES
+// -----------------------------
+const handleIdValue = async (itemId: string, idValue: number, date: string, semaine: string, cours: string): Promise<void> => {
     const parseData: Date = parseDate(date);
     const update: string = formatUpdate(parseData);
     const nextDates: string = functionDate(parseData);
@@ -122,16 +124,20 @@ const handleIdValue = async (itemId: string, idValue: number, date: string, sema
         console.log("Update done !");
     }
 
-    if (!datesPremieresVacances.includes(nextDates) && !datesSecondesVacances.includes(nextDates)) {
-        console.log(`Mise à jour CMS pour idValue ${idValue}: ${nextDates}`, "correspondant à", `Semaine ${semaine}`, cours);
-        await updateCMSItem(itemId, idValue, nextDates);
-    } else {
+    const vacances = datesPremieresVacances.includes(nextDates) || datesSecondesVacances.includes(nextDates);
+
+    if (vacances) {
         console.log("Cette date tombe sur les vacances, pas de mise à jour.");
+        return;
     }
-    return { idValue, semaine, nextDates, cours };
+    console.log(`Mise à jour CMS pour idValue ${idValue}: ${nextDates}`, "correspondant à", `Semaine ${semaine}`, cours);
+    await updateCMSItem(itemId, idValue, nextDates);
 };
 
-const publishSite = async () => {
+// -----------------------------
+// PUBLICATION SUR SITE WEBFLOW
+// -----------------------------
+const publishSite = async (): Promise<InformationsType | null> => {
     try {
         const response = await fetch(
             `https://api.webflow.com/v2/sites/${process.env.SITE_ID}/publish`,
@@ -140,9 +146,12 @@ const publishSite = async () => {
                     headers: {
                         "Authorization": `Bearer ${process.env.WEBFLOW_API_TOKEN}`,
                         "accept-version": "2.0.0",
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
                     },
-                    body: JSON.stringify({ domains: [process.env.DOMAIN_ID_2] })
+                    body: JSON.stringify({
+                        "customDomains": [process.env.DOMAIN_ID_1, process.env.DOMAIN_ID_2],
+                        "publishToWebflowSubdomain": false
+                    }),
                 }
         );
 
@@ -152,7 +161,7 @@ const publishSite = async () => {
             return null;
         }
 
-        const data = await response.json();
+        const data = await response.json() as InformationsType;
         console.log("Site publié avec succès !");
         return data;
     } catch (err) {
@@ -161,19 +170,11 @@ const publishSite = async () => {
     }
 };
 
-//FETCH DOMAIN
-// const fetchDomains = async () => {
-//     const res = await fetch(`https://api.webflow.com/v2/sites/${process.env.SITE_ID}/custom_domains`, {
-//         headers: {
-//             "Authorization": `Bearer ${process.env.WEBFLOW_API_TOKEN}`,
-//             "accept-version": "2.0.0"
-//         }
-//     });
-//   const domains = await res.json() as string;
-//   console.log(domains);
-// };
 
-// Appel des items depuis la CMS Collection
+
+// ---------------
+// FETCH CMS DATA
+// ---------------
 const fetchCMSData = async (): Promise<InformationsType[] | string> => {
     const response = await fetch(`https://api.webflow.com/v2/collections/${process.env.COLLECTION_ID}/items?offset=0&limit=100`, {
         headers: {
@@ -184,6 +185,7 @@ const fetchCMSData = async (): Promise<InformationsType[] | string> => {
     const data = await response.json() as DataType;
     // console.log("data", data);
 
+    // Faut-il vraiement le mettre ici !!!
     const informations: InformationsType[] = [];
 
     try {
@@ -217,32 +219,26 @@ const fetchCMSData = async (): Promise<InformationsType[] | string> => {
     */
     now.setHours(8, 0, 0, 0);
 
-    const day = String(now.getDate()).padStart(2, "0");
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const year = String(now.getFullYear());
-
-    // Fixe l'heure et les minutes
-    const hours = String(now.getHours()).padStart(2, "0");
-    const minutes = String(now.getMinutes()).padStart(2, "0");
-    const formattedDate: string = `${day}/${month}/${year} ${hours}:${minutes}`;
+    const formattedDate: string = `${String(now.getDate()).padStart(2, "0")}/` +
+                        `${String(now.getMonth() + 1).padStart(2, "0")}/` +
+                        `${String(now.getFullYear())}` + // à vérifier avec String !!!
+                        `${String(now.getHours()).padStart(2, "0")}:` +
+                        `${String(now.getMinutes()).padStart(2, "0")}`;
     console.log("*** formattedDate ***", formattedDate);
     /*
         Vérifie si la date du jour correspond à la date 
         du dernier UPDATE programmé (JSON file)!
     */
     const lastDateRecorded: string | undefined = dateToUpdate.at(-1);
-
-    //await fetchDomains();
-    //console.log("finish!!!");
-    //return informations;
+    console.log("** lastDateRecorded **", lastDateRecorded);
     
     if (lastDateRecorded === formattedDate) {
         try {
-            //Ordonne la sortie des data par id_value
+            //Ordonne la sortie des data par id_value ASC
             informations.sort((a, b) => a.idValue - b.idValue);
             //console.log("informations:", informations);
             for (let idValueToUpdate = 1; idValueToUpdate <= 27; idValueToUpdate++) {
-                const item = informations.find((i: InformationsType) => i.idValue === idValueToUpdate);
+                const item: InformationsType | undefined = informations.find((info: InformationsType) => info.idValue === idValueToUpdate);
                 if (item) {
                     await handleIdValue(item.itemId, item.idValue, item.date, item.semaine, item.cours);
                 }
@@ -257,10 +253,12 @@ const fetchCMSData = async (): Promise<InformationsType[] | string> => {
         return formattedDate;
     }
 };
-//fetchCMSData();
 
-// vendredi à 08:00 = "* 8 * * 5"
-cron.schedule("10 12 * * 4", async () => {
+/* 
+    Fonction cron qui sert à lancer la function fetchCMSData();
+    Le lancement est programmé pour chaque vendredi à 08:00 ("* 8 * * 5")
+*/
+cron.schedule("30 14 * * 4", async () => {
     const now = new Date();
     console.log("------ Cron Job lancé ------");
     console.log(`Date et heure actuelles : ${now.toLocaleString()}`);

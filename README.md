@@ -19,6 +19,8 @@ Le code récupère la dernière date de la liste qui se trouve dans le fichier `
 - Enlever `now.setHours(8, 0, 0, 0);` sinon, ça sera la date du jour avec 08:00 sur 24 heures... !!!
 - Ajouter `cron.schedule("* 8 * * 5", async () => {})` pour que ça se déclenche vendredi à 8h00.
 
+- Pour 3 semaines `idValueToUpdate <= 27` : `for (let idValueToUpdate = 1; idValueToUpdate <= 27; idValueToUpdate++)`
+
 ---
 
 ## CMD pour lancer l'API
@@ -32,6 +34,17 @@ Le code récupère la dernière date de la liste qui se trouve dans le fichier `
 `lancer les server`
 
 `héberger le server gratuitement`
+
+## Lancement
+
+`pnpm install`
+
+`pnpm run build`
+
+
+`npx tsc`
+
+`node dist/server.js`
 
 Affichage dans la console ou terminal.
 
@@ -103,6 +116,7 @@ app.get('/data', async (req: Request, res: Response): Promise<void> => {
 
 // fetchDomains();
 ```
+
 ---
 
 ### Resultat
@@ -122,4 +136,73 @@ app.get('/data', async (req: Request, res: Response): Promise<void> => {
     }
   ]
 }
+```
+
+// ---------------------------------
+// 2. PUBLISH SITE V1 (pages + CMS)
+// ---------------------------------
+await fetch(
+  `https://api.webflow.com/v2/sites/${SITE_ID}/publish`,
+  {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${API_TOKEN}`,
+      "Content-Type": "application/json"
+    },
+      body: JSON.stringify({
+        live: true
+    }),
+  }
+);
+
+`https://developers.webflow.com/data/docs/working-with-the-cms/manage-collections-and-items#defining-reference-and-multi-reference-fields`
+
+## API v2 PUBLISH
+=================
+
+```
+curl -X POST https://api.webflow.com/v2/sites/580e63e98c9a982ac9b8b741/publish \
+     -H "Authorization: Bearer <token>" \
+     -H "Content-Type: application/json" \
+     -d '{
+  "customDomains": [
+    "660c6449dd97ebc7346ac629",
+    "660c6449dd97ebc7346ac62f"
+  ],
+  "publishToWebflowSubdomain": false
+}'
+```
+
+Pour le time :
+
+```
+    // const day = String(now.getDate()).padStart(2, "0");
+    // const month = String(now.getMonth() + 1).padStart(2, "0");
+    // const year = String(now.getFullYear());
+    // Fixe l'heure et les minutes
+    // const hours = String(now.getHours()).padStart(2, "0");
+    // const minutes = String(now.getMinutes()).padStart(2, "0");
+    //const formattedDate: string = `${day}/${month}/${year} ${hours}:${minutes}`;
+```
+
+---
+
+## Hébergement
+
+`Render.com` est le meilleur choix gratuit et stable.
+
+✔ la configuration Render "clé en main"
+✔ un fichier render.yaml (déploiement automatique)
+✔ un fichier spécial cron-runner.js
+✔ un Dockerfile (pour Fly.io)
+✔ une version optimisée pour hébergement gratuit (sans risques de crash)
+
+`tsconfig.json`
+```
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "module": "commonjs",
+    "target": "es2019",
+    "esModuleInterop": true,
+    "strict": true
 ```

@@ -7,6 +7,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 //{ Request, Response }
 const express_1 = __importDefault(require("express"));
+const node_cron_1 = __importDefault(require("node-cron"));
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const UPDATE_FILE = path_1.default.join(__dirname, "update-dates.json");
@@ -122,9 +123,12 @@ const publishSite = async () => {
             headers: {
                 "Authorization": `Bearer ${process.env.WEBFLOW_API_TOKEN}`,
                 "accept-version": "2.0.0",
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
             },
-            body: JSON.stringify({ domains: [process.env.DOMAIN_ID_2] })
+            body: JSON.stringify({
+                "customDomains": [process.env.DOMAIN_ID_1, process.env.DOMAIN_ID_2],
+                "publishToWebflowSubdomain": false
+            }),
         });
         if (!response.ok) {
             const errorData = await response.json();
@@ -139,17 +143,6 @@ const publishSite = async () => {
         console.error("Erreur lors de la publication :", err);
         return null;
     }
-};
-//FETCH DOMAIN
-const fetchDomains = async () => {
-    const res = await fetch(`https://api.webflow.com/v2/sites/${process.env.SITE_ID}/custom_domains`, {
-        headers: {
-            "Authorization": `Bearer ${process.env.WEBFLOW_API_TOKEN}`,
-            "accept-version": "2.0.0"
-        }
-    });
-    const domains = await res.json();
-    console.log(domains);
 };
 // Appel des items depuis la CMS Collection
 const fetchCMSData = async () => {
@@ -206,45 +199,48 @@ const fetchCMSData = async () => {
         du dernier UPDATE programmé (JSON file)!
     */
     const lastDateRecorded = dateToUpdate.at(-1);
-    await fetchDomains();
+    console.log("** lastDateRecorded **", lastDateRecorded);
     //console.log("finish!!!");
-    return informations;
-    // if (lastDateRecorded === formattedDate) {
-    //     try {
-    //         //Ordonne la sortie des data par id_value
-    //         informations.sort((a, b) => a.idValue - b.idValue);
-    //         //console.log("informations:", informations);
-    //         for (let idValueToUpdate = 1; idValueToUpdate <= 27; idValueToUpdate++) {
-    //             const item = informations.find((i: InformationsType) => i.idValue === idValueToUpdate);
-    //             if (item) {
-    //                 await handleIdValue(item.itemId, item.idValue, item.date, item.semaine, item.cours);
-    //             }
-    //         }
-    //     } catch (err) {
-    //         console.log("Erreur lors avec informations.sort() et informations.forEach()", err);
-    //     }
-    //     await publishSite();
-    //     return informations;
-    // } else {
-    //     console.log("Nothing to update !", formattedDate);
-    //     return formattedDate;
-    // }
+    //return informations;
+    if (lastDateRecorded === formattedDate) {
+        try {
+            //Ordonne la sortie des data par id_value
+            informations.sort((a, b) => a.idValue - b.idValue);
+            //console.log("informations:", informations);
+            for (let idValueToUpdate = 1; idValueToUpdate <= 27; idValueToUpdate++) {
+                const item = informations.find((i) => i.idValue === idValueToUpdate);
+                if (item) {
+                    await handleIdValue(item.itemId, item.idValue, item.date, item.semaine, item.cours);
+                }
+            }
+        }
+        catch (err) {
+            console.log("Erreur lors avec informations.sort() et informations.forEach()", err);
+        }
+        await publishSite();
+        return informations;
+    }
+    else {
+        console.log("Nothing to update !", formattedDate);
+        return formattedDate;
+    }
 };
-fetchCMSData();
+//fetchCMSData();
 // vendredi à 08:00 = "* 8 * * 5"
-// cron.schedule("10 12 * * 4", async () => {
-//     const now = new Date();
-//     console.log("------ Cron Job lancé ------");
-//     console.log(`Date et heure actuelles : ${now.toLocaleString()}`);
-//     console.log("fetchCMSData() va s'exécuter maintenant !");
-//     try {
-//         await fetchCMSData();
-//         console.log("fetchCMSData() terminé avec succès !");
-//     } catch (err) {
-//         console.error("Erreur lors de fetchCMSData :", err);
-//     }
-//     console.log("---------------------------");
-// });
+node_cron_1.default.schedule("35 13 * * 4", async () => {
+    const now = new Date();
+    console.log("------ Cron Job lancé ------");
+    console.log(`Date et heure actuelles : ${now.toLocaleString()}`);
+    console.log("fetchCMSData() va s'exécuter maintenant !");
+    try {
+        await fetchCMSData();
+        console.log("fetchCMSData() terminé avec succès !");
+    }
+    catch (err) {
+        console.error("Erreur lors de fetchCMSData :", err);
+    }
+    console.log("---------------------------");
+});
 app.listen(PORT, () => {
     console.log(`Serveur en cours d'exécution sur http://localhost:${PORT}`);
 });
