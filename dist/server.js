@@ -97,7 +97,7 @@ const handleIdValue = async (itemId, idValue, date, semaine, cours) => {
     const currentYear = new Date().getFullYear();
     const lastWeekPerYear = (0, dateUtils_1.deuxDernieresSemaines)(currentYear);
     const firstEndLastWeek = lastWeekPerYear.avantDerniereSemaine.debut;
-    const endValDate = lastWeekPerYear.derniereSemaine.fin;
+    // const endValDate: string = lastWeekPerYear.derniereSemaine.fin;
     //console.log("dates 2 dernières semaines de l'année en cours", firstEndLastWeek, endValDate);
     const valOfFirstEnd = firstEndLastWeek.includes(nextDates);
     // A vérifier
@@ -110,7 +110,7 @@ const handleIdValue = async (itemId, idValue, date, semaine, cours) => {
         dateToUpdate.push(update);
         await saveUpdateDates();
         console.log("Update programmer pour dans 8 semaines !");
-        return;
+        //return;
     }
     // dates de début d'année
     if (datesStart) {
@@ -242,7 +242,7 @@ const fetchCMSData = async () => {
     Fonction cron qui sert à lancer la function fetchCMSData();
     Le lancement est programmé pour chaque vendredi à 08:00 ("* 8 * * 5")
 */
-node_cron_1.default.schedule("54 10 * * 3", async () => {
+node_cron_1.default.schedule("34 11 * * 3", async () => {
     const now = new Date();
     console.log("------ Cron Job lancé ------");
     console.log(`Date et heure actuelles : ${now.toLocaleString()}`);

@@ -3,34 +3,36 @@ import type { EndDatesYearsTypes } from "./types";
 // Reusable function to convert date
 // + 63j après la date figurant dans la cms collection (9 semaines après)
 export const functionDate = (date: Date): string => {
-    date.setDate(date.getDate() + 63);
+    const newDate: Date = new Date(date);
+    newDate.setDate(newDate.getDate() + 63);
     const nextDates = [
-        String(date.getDate()).padStart(2, "0"),
-        String(date.getMonth() + 1).padStart(2, "0"),
-        date.getFullYear()
+        String(newDate.getDate()).padStart(2, "0"),
+        String(newDate.getMonth() + 1).padStart(2, "0"),
+        newDate.getFullYear()
     ].join("/");
     return nextDates;
 };
 
+// Update du vendredi
 export const formatUpdate = (update: Date): string => {
     // Ajouter 54 jours et 8 heures
-    update.setDate(update.getDate() + 54);
-    update.setHours(update.getHours() + 8);
+    const newDate: Date = new Date(update);
+    newDate.setDate(newDate.getDate() + 54);
+    newDate.setHours(newDate.getHours() + 8);
 
     // Ajuster pour tomber sur vendredi (5 en JS, 0 = dimanche)
-    const dayOfWeek = update.getDay();  // 0 = dimanche ... 5 = vendredi
+    const dayOfWeek = newDate.getDay();  // 0 = dimanche ... 5 = vendredi
     const daysToFriday = (5 - dayOfWeek + 7) % 7;
-    update.setDate(update.getDate() + daysToFriday);
+    newDate.setDate(newDate.getDate() + daysToFriday);
 
     // Formater la date
     const nextDates = [
-        String(update.getDate()).padStart(2, "0"),
-        String(update.getMonth() + 1).padStart(2, "0"),
-        update.getFullYear()
+        String(newDate.getDate()).padStart(2, "0"),
+        String(newDate.getMonth() + 1).padStart(2, "0"),
+        newDate.getFullYear()
     ].join("/");
-
-    const hours = String(update.getHours()).padStart(2, "0");
-    const minutes = String(update.getMinutes()).padStart(2, "0");
+    const hours = String(newDate.getHours()).padStart(2, "0");
+    const minutes = String(newDate.getMinutes()).padStart(2, "0");
     return `${nextDates} ${hours}:${minutes}`;
 };
 
