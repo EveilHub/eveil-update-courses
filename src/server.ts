@@ -4,13 +4,16 @@ import express from 'express';
 import cron from 'node-cron';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { parseDate, functionDate, formatUpdate, deuxDernieresSemaines } from './dateUtils';
+import { parseDate, functionDate, formatUpdateFriday, deuxDernieresSemaines, formatHolidayUpdate } from './dateUtils';
 dotenv.config();
 
 const UPDATE_FILE = path.join(__dirname, "update-dates.json");
 
 const app = express();
 const PORT: number = 3000;
+
+    // Retrieve informations from CMS Collection
+    const informations: InformationsType[] = [];
 
 // Load from JSON file
 const loadUpdateDates = async (): Promise<string[]> => {
@@ -103,57 +106,65 @@ const handleIdValue = async (
 
     // MAJ des dates dans la CMS Collection,
     // 63 jours après, selon (update)
-    const nextDates: string = functionDate(formatData);
+    let nextDate: string = functionDate(formatData);
     const noDates: string = "--/--/----";
 
     // Update prog dans 8 semaines, le vendredi à 08:00
-    const update: string = formatUpdate(formatUpdateData);
+    const update: string = formatUpdateFriday(formatUpdateData);
+
+    // Update prog -3 jours, le vendredi à 08:00
+    const formatHolidayData: Date = parseDate(nextDate);
+    const updateHoliday: string = formatHolidayUpdate(formatHolidayData);
 
     // Calcul des 2 dernières semaines de l'année en cours
     const currentYear: number = new Date().getFullYear();
     const lastWeekPerYear: EndDatesYearsTypes = deuxDernieresSemaines(currentYear);
     const firstEndLastWeek: string = lastWeekPerYear.avantDerniereSemaine.debut;
-    
-    // const endValDate: string = lastWeekPerYear.derniereSemaine.fin;
-
-    //console.log("dates 2 dernières semaines de l'année en cours", firstEndLastWeek, endValDate);
-
-    const valOfFirstEnd: boolean = firstEndLastWeek.includes(nextDates);
+    //const endValDate: string = lastWeekPerYear.derniereSemaine.fin;
+    //console.log("++ Dates 2 dernières semaines de l'année en cours", firstEndLastWeek, endValDate);
 
     // A vérifier
     // Date du début d'année pour 10 ans... Il en manque 2...
     const datesPremieresDates: string[] = ['05/01/2026', '04/01/2027', '03/01/2028', 
         '08/01/2029', '07/01/2030', '06/01/2031', '05/01/2032', '03/01/2033'];
-    const datesStart: boolean = datesPremieresDates.includes(nextDates);
 
-    // update dans 8 semaines
-    if (idValue === 1) {
-        dateToUpdate.push(update);
-        await saveUpdateDates();
-        console.log("Update programmer pour dans 8 semaines !");
-        //return;
-    } 
+    const datesStartYear: boolean = datesPremieresDates.includes(nextDate);
+    console.log(datesStartYear, "datesStartYear");
 
-    // dates de début d'année
-    if (datesStart) {
-        dateToUpdate.push(update);
-        await overwriteFile();
-        console.log("!!! Happy New Year !!! Update programmer pour dans 8 semaines !");
-        //await updateCMSItem(itemId, idValue, nextDates);
+    // Dates des vacances
+    if (nextDate !== firstEndLastWeek) {
+        console.log(`MAJ du CMS par idValue ${idValue}: ${nextDate}`, 
+            "correspondant à", `Semaine ${semaine}`, cours);
+        //await updateCMSItem(itemId, idValue, nextDate);
+    } else if (nextDate === firstEndLastWeek) {
+        const currentIndex = informations.findIndex((info: { idValue: number; }) => 
+            info.idValue === idValue
+        );
+        if (currentIndex !== -1) { // 18 = 2 x 9 cours = 2 semaines vacances
+            for (let i = currentIndex; i < informations.length; i++) {
+                const nextItem = informations[i];
+                console.log("!!! Ces dates tombent sur les vacances !!!", nextItem.idValue, noDates, nextItem.cours);
+                //await updateCMSItem(nextItem.itemId, nextItem.idValue, noDates);
+            }
+        }
         return;
     }
 
-    // nextDates est égale au lundi avantDerniereSemaine de la date de fin d'année
-    if (nextDates === firstEndLastWeek) {
-        console.log("!!! Ces dates tombent sur les vacances !!!");
-        console.log("itemId - idValue - semaine - noDates, nextDates", 
-            itemId, idValue, semaine, noDates, nextDates);
-        //await updateCMSItem(itemId, idValue, noDates);
+    // Update dans 8 semaines
+    if (idValue === 1) {
+        dateToUpdate.push(update);
+        await saveUpdateDates();
+        //await overwriteFile();
+        console.log("Update programmer pour dans 8 semaines !");
         return;
-    };
-    console.log(`MAJ du CMS par idValue ${idValue}: ${nextDates}`, 
-        "correspondant à", `Semaine ${semaine}`, cours);
-    //await updateCMSItem(itemId, idValue, nextDates);
+    } else if (datesStartYear && idValue !== 1) {
+        // Update dans - 3 jours
+        dateToUpdate.push(updateHoliday);
+        await overwriteFile();
+        console.log("!!! Happy New Year !!! Update programmer pour dans 8 semaines !");
+        //await updateCMSItem(itemId, idValue, nextDate);
+        return;
+    }
 };
 
 // -----------------------------
@@ -182,7 +193,6 @@ const publishSite = async (): Promise<InformationsType | null> => {
             console.error("Erreur lors de la publication :", errorData);
             return null;
         }
-
         const data = await response.json() as InformationsType;
         console.log("Site publié avec succès !");
         return data;
@@ -208,8 +218,7 @@ const fetchCMSData = async (): Promise<InformationsType[] | string> => {
     const data = await response.json() as DataType;
     // console.log("data", data);
 
-    // Retrieve informations from CMS Collection
-    const informations: InformationsType[] = [];
+
 
     try {
         if (data.items && data.items.length > 0) {
@@ -283,7 +292,7 @@ const fetchCMSData = async (): Promise<InformationsType[] | string> => {
     Fonction cron qui sert à lancer la function fetchCMSData();
     Le lancement est programmé pour chaque vendredi à 08:00 ("* 8 * * 5")
 */
-cron.schedule("34 11 * * 3", async () => {
+cron.schedule("56 16 * * 3", async () => {
     const now = new Date();
     console.log("------ Cron Job lancé ------");
     console.log(`Date et heure actuelles : ${now.toLocaleString()}`);

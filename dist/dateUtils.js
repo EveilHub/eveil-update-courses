@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deuxDernieresSemaines = exports.parseDate = exports.formatUpdate = exports.functionDate = void 0;
-// Reusable function to convert date
+exports.deuxDernieresSemaines = exports.formatHolidayUpdate = exports.parseDate = exports.formatUpdateFriday = exports.functionDate = void 0;
 // + 63j après la date figurant dans la cms collection (9 semaines après)
 const functionDate = (date) => {
     const newDate = new Date(date);
@@ -15,7 +14,7 @@ const functionDate = (date) => {
 };
 exports.functionDate = functionDate;
 // Update du vendredi
-const formatUpdate = (update) => {
+const formatUpdateFriday = (update) => {
     // Ajouter 54 jours et 8 heures
     const newDate = new Date(update);
     newDate.setDate(newDate.getDate() + 54);
@@ -24,7 +23,6 @@ const formatUpdate = (update) => {
     const dayOfWeek = newDate.getDay(); // 0 = dimanche ... 5 = vendredi
     const daysToFriday = (5 - dayOfWeek + 7) % 7;
     newDate.setDate(newDate.getDate() + daysToFriday);
-    // Formater la date
     const nextDates = [
         String(newDate.getDate()).padStart(2, "0"),
         String(newDate.getMonth() + 1).padStart(2, "0"),
@@ -34,7 +32,7 @@ const formatUpdate = (update) => {
     const minutes = String(newDate.getMinutes()).padStart(2, "0");
     return `${nextDates} ${hours}:${minutes}`;
 };
-exports.formatUpdate = formatUpdate;
+exports.formatUpdateFriday = formatUpdateFriday;
 // Centralize date parsing and handling
 const parseDate = (dateStr) => {
     const [dayStr, monthStr, yearStr] = dateStr.split("/");
@@ -49,6 +47,21 @@ function formatDate(date) {
     return date.toLocaleDateString("fr-FR");
 }
 ;
+const formatHolidayUpdate = (date) => {
+    // 4 jours avant et 8 heures 
+    const newDate = new Date(date);
+    newDate.setDate(newDate.getDate() - 3);
+    newDate.setHours(newDate.getHours() + 8);
+    const nextDates = [
+        String(newDate.getDate()).padStart(2, "0"),
+        String(newDate.getMonth() + 1).padStart(2, "0"),
+        newDate.getFullYear()
+    ].join("/");
+    const hours = String(newDate.getHours()).padStart(2, "0");
+    const minutes = String(newDate.getMinutes()).padStart(2, "0");
+    return `${nextDates} ${hours}:${minutes}`;
+};
+exports.formatHolidayUpdate = formatHolidayUpdate;
 const deuxDernieresSemaines = (annee) => {
     // Dernier jour de l'année : 31 décembre
     let fin = new Date(annee, 11, 31);

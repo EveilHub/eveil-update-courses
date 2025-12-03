@@ -13,6 +13,8 @@ dotenv_1.default.config();
 const UPDATE_FILE = path_1.default.join(__dirname, "update-dates.json");
 const app = (0, express_1.default)();
 const PORT = 3000;
+// Retrieve informations from CMS Collection
+const informations = [];
 // Load from JSON file
 const loadUpdateDates = async () => {
     try {
@@ -89,47 +91,57 @@ const handleIdValue = async (itemId, idValue, date, semaine, cours) => {
     const formatUpdateData = (0, dateUtils_1.parseDate)(date);
     // MAJ des dates dans la CMS Collection,
     // 63 jours après, selon (update)
-    const nextDates = (0, dateUtils_1.functionDate)(formatData);
+    let nextDate = (0, dateUtils_1.functionDate)(formatData);
     const noDates = "--/--/----";
     // Update prog dans 8 semaines, le vendredi à 08:00
-    const update = (0, dateUtils_1.formatUpdate)(formatUpdateData);
+    const update = (0, dateUtils_1.formatUpdateFriday)(formatUpdateData);
+    // Update prog -3 jours, le vendredi à 08:00
+    const formatHolidayData = (0, dateUtils_1.parseDate)(nextDate);
+    const updateHoliday = (0, dateUtils_1.formatHolidayUpdate)(formatHolidayData);
     // Calcul des 2 dernières semaines de l'année en cours
     const currentYear = new Date().getFullYear();
     const lastWeekPerYear = (0, dateUtils_1.deuxDernieresSemaines)(currentYear);
     const firstEndLastWeek = lastWeekPerYear.avantDerniereSemaine.debut;
-    // const endValDate: string = lastWeekPerYear.derniereSemaine.fin;
-    //console.log("dates 2 dernières semaines de l'année en cours", firstEndLastWeek, endValDate);
-    const valOfFirstEnd = firstEndLastWeek.includes(nextDates);
+    //const endValDate: string = lastWeekPerYear.derniereSemaine.fin;
+    //console.log("++ Dates 2 dernières semaines de l'année en cours", firstEndLastWeek, endValDate);
     // A vérifier
     // Date du début d'année pour 10 ans... Il en manque 2...
     const datesPremieresDates = ['05/01/2026', '04/01/2027', '03/01/2028',
         '08/01/2029', '07/01/2030', '06/01/2031', '05/01/2032', '03/01/2033'];
-    const datesStart = datesPremieresDates.includes(nextDates);
-    // update dans 8 semaines
+    const datesStartYear = datesPremieresDates.includes(nextDate);
+    console.log(datesStartYear, "datesStartYear");
+    // Dates des vacances
+    if (nextDate !== firstEndLastWeek) {
+        console.log(`MAJ du CMS par idValue ${idValue}: ${nextDate}`, "correspondant à", `Semaine ${semaine}`, cours);
+        //await updateCMSItem(itemId, idValue, nextDate);
+    }
+    else if (nextDate === firstEndLastWeek) {
+        const currentIndex = informations.findIndex((info) => info.idValue === idValue);
+        if (currentIndex !== -1) { // 18 = 2 x 9 cours = 2 semaines vacances
+            for (let i = currentIndex; i < informations.length; i++) {
+                const nextItem = informations[i];
+                console.log("!!! Ces dates tombent sur les vacances !!!", nextItem.idValue, noDates, nextItem.cours);
+                //await updateCMSItem(nextItem.itemId, nextItem.idValue, noDates);
+            }
+        }
+        return;
+    }
+    // Update dans 8 semaines
     if (idValue === 1) {
         dateToUpdate.push(update);
         await saveUpdateDates();
+        //await overwriteFile();
         console.log("Update programmer pour dans 8 semaines !");
-        //return;
+        return;
     }
-    // dates de début d'année
-    if (datesStart) {
-        dateToUpdate.push(update);
+    else if (datesStartYear && idValue !== 1) {
+        // Update dans - 3 jours
+        dateToUpdate.push(updateHoliday);
         await overwriteFile();
         console.log("!!! Happy New Year !!! Update programmer pour dans 8 semaines !");
-        //await updateCMSItem(itemId, idValue, nextDates);
+        //await updateCMSItem(itemId, idValue, nextDate);
         return;
     }
-    // nextDates est égale au lundi avantDerniereSemaine de la date de fin d'année
-    if (nextDates === firstEndLastWeek) {
-        console.log("!!! Ces dates tombent sur les vacances !!!");
-        console.log("itemId - idValue - semaine - noDates, nextDates", itemId, idValue, semaine, noDates, nextDates);
-        //await updateCMSItem(itemId, idValue, noDates);
-        return;
-    }
-    ;
-    console.log(`MAJ du CMS par idValue ${idValue}: ${nextDates}`, "correspondant à", `Semaine ${semaine}`, cours);
-    //await updateCMSItem(itemId, idValue, nextDates);
 };
 // -----------------------------
 // PUBLICATION SUR SITE WEBFLOW
@@ -174,8 +186,6 @@ const fetchCMSData = async () => {
     });
     const data = await response.json();
     // console.log("data", data);
-    // Retrieve informations from CMS Collection
-    const informations = [];
     try {
         if (data.items && data.items.length > 0) {
             data.items.forEach((item) => {
@@ -242,7 +252,7 @@ const fetchCMSData = async () => {
     Fonction cron qui sert à lancer la function fetchCMSData();
     Le lancement est programmé pour chaque vendredi à 08:00 ("* 8 * * 5")
 */
-node_cron_1.default.schedule("34 11 * * 3", async () => {
+node_cron_1.default.schedule("56 16 * * 3", async () => {
     const now = new Date();
     console.log("------ Cron Job lancé ------");
     console.log(`Date et heure actuelles : ${now.toLocaleString()}`);

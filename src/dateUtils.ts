@@ -1,10 +1,10 @@
 import type { EndDatesYearsTypes } from "./types";
 
-// Reusable function to convert date
 // + 63j après la date figurant dans la cms collection (9 semaines après)
 export const functionDate = (date: Date): string => {
     const newDate: Date = new Date(date);
     newDate.setDate(newDate.getDate() + 63);
+
     const nextDates = [
         String(newDate.getDate()).padStart(2, "0"),
         String(newDate.getMonth() + 1).padStart(2, "0"),
@@ -14,7 +14,7 @@ export const functionDate = (date: Date): string => {
 };
 
 // Update du vendredi
-export const formatUpdate = (update: Date): string => {
+export const formatUpdateFriday = (update: Date): string => {
     // Ajouter 54 jours et 8 heures
     const newDate: Date = new Date(update);
     newDate.setDate(newDate.getDate() + 54);
@@ -25,7 +25,6 @@ export const formatUpdate = (update: Date): string => {
     const daysToFriday = (5 - dayOfWeek + 7) % 7;
     newDate.setDate(newDate.getDate() + daysToFriday);
 
-    // Formater la date
     const nextDates = [
         String(newDate.getDate()).padStart(2, "0"),
         String(newDate.getMonth() + 1).padStart(2, "0"),
@@ -49,6 +48,23 @@ export const parseDate = (dateStr: string): Date => {
 function formatDate(date: Date): string {
     return date.toLocaleDateString("fr-FR");
 };
+
+export const formatHolidayUpdate = (date: Date): string => {
+    // 4 jours avant et 8 heures 
+    const newDate: Date = new Date(date);
+    newDate.setDate(newDate.getDate() - 3);
+    newDate.setHours(newDate.getHours() + 8);
+
+    const nextDates = [
+        String(newDate.getDate()).padStart(2, "0"),
+        String(newDate.getMonth() + 1).padStart(2, "0"),
+        newDate.getFullYear()
+    ].join("/");
+    const hours = String(newDate.getHours()).padStart(2, "0");
+    const minutes = String(newDate.getMinutes()).padStart(2, "0");
+    return `${nextDates} ${hours}:${minutes}`;
+};
+
 
 export const deuxDernieresSemaines = (annee: number): EndDatesYearsTypes => {
     // Dernier jour de l'année : 31 décembre
