@@ -26,15 +26,16 @@ let dateToUpdate: string[] = loadUpdateDates();
 const saveUpdateDates = (): void => {
     try {
         fs.writeFileSync(UPDATE_FILE, JSON.stringify(dateToUpdate, null, 2), "utf8");
-        console.log("File saved successfully!");
+        console.log("Update standard saved successfully!");
     } catch (err) {
-        console.error("Erreur lors de la sauvegarde :", err);
+        console.error("Erreur lors de la sauvegarde standard :", err);
     }
 };
 
 // Reusable function to convert date
+// + 63j après la date figurant dans la cms collection (9 semaines après)
 const functionDate = (date: Date): string => {
-    date.setDate(date.getDate() + 3);
+    date.setDate(date.getDate() + 56);
     const nextDates = [
         String(date.getDate()).padStart(2, "0"),
         String(date.getMonth() + 1).padStart(2, "0"),
@@ -58,7 +59,6 @@ const formatUpdate = (update: Date): string => {
     const minutes = String(update.getMinutes()).padStart(2, "0");
     return `${nextDates} ${hours}:${minutes}`;
 };
-
 
 // Centralize date parsing and handling
 const parseDate = (dateStr: string): Date => {
@@ -111,29 +111,37 @@ const updateCMSItem = async (itemId: string, idValue: number, nouvelleDate: stri
 // LOGIQUE TRAITEMENT DES DATES
 // -----------------------------
 const handleIdValue = async (itemId: string, idValue: number, date: string, semaine: string, cours: string): Promise<void> => {
-    const parseData: Date = parseDate(date);
-    const update: string = formatUpdate(parseData);
-    const nextDates: string = functionDate(parseData);
+    const formatData: Date = parseDate(date);
 
-    const datesPremieresVacances: string[] = ['22/12/2025', '23/12/2025', '24/01/2025', '25/01/2025', 
-        '29/01/2025', '30/01/2025', '31/01/2025', '01/01/2026'];
-    const datesSecondesVacances: string[] = ['20/01/2026', '21/01/2026', '22/01/2026', '23/01/2026'];
+    const formatUpdateData: Date = parseDate(date);
+
+    // MAJ des dates 3 jours après le update
+    const nextDates: string = functionDate(formatData);
+    const noDates: string = "--/--/----";
+
+    // Update prog dans 8 semaines, le vendredi à 08:00
+    const update: string = formatUpdate(formatUpdateData);
+
+    const datesPremieresDates: string[] = ['12/01/2026', '13/01/2027', '14/01/2028', '15/01/2029'];
+
+    const datesStart = datesPremieresDates.includes(nextDates);
 
     if (idValue === 1) {
         dateToUpdate.push(update);
         saveUpdateDates();
-        console.log("Update done !");
-    }
-
-    const vacances = datesPremieresVacances.includes(nextDates) || datesSecondesVacances.includes(nextDates);
-
-    if (vacances) {
-        console.log("Cette date tombe sur les vacances, pas de mise à jour.");
+        console.log("Update programmer pour dans 8 semaines !");
         return;
-    }
-    // Il faut un reboot à la semaine 1 après les vacances $(semaine === 1) pour la prochaine date !!!
+    } 
+    
+    if (datesStart) {
+        // ajouter une logique pour que ça démarre la 
+        console.log("!!! Ces dates tombent sur les vacances !!!");
+        console.log("itemId - idValue - noDates, nextDates", itemId, idValue, noDates, nextDates);
+        //await updateCMSItem(itemId, idValue, noDates);
+        return;
+    };
     console.log(`Mise à jour CMS pour idValue ${idValue}: ${nextDates}`, "correspondant à", `Semaine ${semaine}`, cours);
-    await updateCMSItem(itemId, idValue, nextDates);
+    //await updateCMSItem(itemId, idValue, nextDates);
 };
 
 // -----------------------------
@@ -172,22 +180,23 @@ const publishSite = async (): Promise<InformationsType | null> => {
     }
 };
 
-
-
 // ---------------
 // FETCH CMS DATA
 // ---------------
 const fetchCMSData = async (): Promise<InformationsType[] | string> => {
-    const response = await fetch(`https://api.webflow.com/v2/collections/${process.env.COLLECTION_ID}/items?offset=0&limit=100`, {
-        headers: {
-            'Authorization': `Bearer ${process.env.WEBFLOW_API_TOKEN}`,
-            'accept-version': '2.0.0'
-        }
-    });
+    const response = await fetch(
+        `https://api.webflow.com/v2/collections/${process.env.COLLECTION_ID}/items?offset=0&limit=100`, 
+            {
+                headers: {
+                    'Authorization': `Bearer ${process.env.WEBFLOW_API_TOKEN}`,
+                    'accept-version': '2.0.0'
+                }
+            }
+    );
     const data = await response.json() as DataType;
     // console.log("data", data);
 
-    // Faut-il vraiement le mettre ici !!!
+    // Retrieve informations from CMS Collection
     const informations: InformationsType[] = [];
 
     try {
@@ -220,11 +229,10 @@ const fetchCMSData = async (): Promise<InformationsType[] | string> => {
         test la date du jour avec 08:00 (il faut supprimer pour la version finale)!!!
     */
     now.setHours(8, 0, 0, 0);
-
     const formattedDate: string = `${String(now.getDate()).padStart(2, "0")}/` +
                         `${String(now.getMonth() + 1).padStart(2, "0")}/` +
-                        `${String(now.getFullYear())}` + // à vérifier avec String !!!
-                        `${String(now.getHours()).padStart(2, "0")}:` +
+                        `${String(now.getFullYear())}` +
+                        ` ${String(now.getHours()).padStart(2, "0")}:` + 
                         `${String(now.getMinutes()).padStart(2, "0")}`;
     console.log("*** formattedDate ***", formattedDate);
     /*
@@ -233,13 +241,14 @@ const fetchCMSData = async (): Promise<InformationsType[] | string> => {
     */
     const lastDateRecorded: string | undefined = dateToUpdate.at(-1);
     console.log("** lastDateRecorded **", lastDateRecorded);
+    console.log("formattedDate", formattedDate);
     
     if (lastDateRecorded === formattedDate) {
         try {
             //Ordonne la sortie des data par id_value ASC
             informations.sort((a, b) => a.idValue - b.idValue);
             //console.log("informations:", informations);
-            for (let idValueToUpdate = 1; idValueToUpdate <= 27; idValueToUpdate++) {
+            for (let idValueToUpdate = 1; idValueToUpdate <= 36; idValueToUpdate++) {
                 const item: InformationsType | undefined = informations.find((info: InformationsType) => info.idValue === idValueToUpdate);
                 if (item) {
                     await handleIdValue(item.itemId, item.idValue, item.date, item.semaine, item.cours);
@@ -248,7 +257,7 @@ const fetchCMSData = async (): Promise<InformationsType[] | string> => {
         } catch (err) {
             console.log("Erreur lors avec informations.sort() et informations.forEach()", err);
         }
-        await publishSite();
+        //await publishSite();
         return informations;
     } else {
         console.log("Nothing to update !", formattedDate);
@@ -260,7 +269,7 @@ const fetchCMSData = async (): Promise<InformationsType[] | string> => {
     Fonction cron qui sert à lancer la function fetchCMSData();
     Le lancement est programmé pour chaque vendredi à 08:00 ("* 8 * * 5")
 */
-cron.schedule("30 14 * * 4", async () => {
+cron.schedule("27 16 * * 2", async () => {
     const now = new Date();
     console.log("------ Cron Job lancé ------");
     console.log(`Date et heure actuelles : ${now.toLocaleString()}`);
