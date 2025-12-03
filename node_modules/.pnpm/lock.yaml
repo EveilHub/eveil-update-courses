@@ -23,6 +23,9 @@ importers:
       node-cron:
         specifier: ^4.2.1
         version: 4.2.1
+      self-update:
+        specifier: ^0.0.1
+        version: 0.0.1
       url:
         specifier: ^0.11.4
         version: 0.11.4
@@ -430,6 +433,9 @@ packages:
 
   safer-buffer@2.1.2:
     resolution: {integrity: sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==}
+
+  self-update@0.0.1:
+    resolution: {integrity: sha512-q0mbbnXYlSZmTOQ5jT+WS43M4FnmVzhV2KbQrLUAvJzNNnEznSNy2j+nFHzO/tUXDArlN4byo3FW0GHaEV0GdA==}
 
   semver@7.7.3:
     resolution: {integrity: sha512-SdsKMrI9TdgjdweUSR9MweHA4EJ8YxHn8DFaDisvhVlUOe4BF1tLD7GAj0lIqWVl+dPb/rExr0Btby5loQm20Q==}
@@ -947,6 +953,8 @@ snapshots:
       - supports-color
 
   safer-buffer@2.1.2: {}
+
+  self-update@0.0.1: {}
 
   semver@7.7.3: {}
 

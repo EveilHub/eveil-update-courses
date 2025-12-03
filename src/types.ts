@@ -38,3 +38,14 @@ export type InformationsType = {
     semaine: string,
     cours: string
 };
+
+export type EndDatesYearsTypes = {
+    avantDerniereSemaine: {
+        debut: string,
+        fin: string
+    },
+    derniereSemaine: {
+        debut: string,
+        fin: string
+    }
+};

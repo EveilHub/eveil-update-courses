@@ -59,14 +59,15 @@ Malgré qu'aucune donnée sensible ne soit partagée, il y quand même une sécu
 - Connection sécurisée HTTPS => ???
 
 ```
-	id-value correspond à l'id_value de la CMS Collection.
-	Webflow le converti automatiquement en "id-value" !
-	C'est parfait pour la sécurité !!!
-	Il faut utiliser Number(item.fieldData["id-value"]), dans ce cas !
+  id-value correspond à l'id_value de la CMS Collection.
+  Webflow le converti en id-value automatiquement !
+  C'est parfait pour la sécurité !!!
+  Il faut utiliser Number(item.fieldData["id-value"]), 
+  dans ce cas !
 ```
 
 Si le server serait exposer au frontend, il faudrait utiliser les CORS !
-Mais puisque les utilisateurs n'auront pas accès, il n'a pas besoin des CORS.
+Mais puisque les utilisateurs n'auront pas accès, il n'a pas besoin.
 
 ```
 //accepter les ressources pour afficher des data sur page de webflow
