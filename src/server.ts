@@ -104,8 +104,8 @@ const handleIdValue = async (
     const formatData: Date = parseDate(date);
     const formatUpdateData: Date = parseDate(date);
 
-    // MAJ des dates dans la CMS Collection,
-    // 63 jours après, selon (update)
+    // MAJ des dates dans la CMS Collection, 63 jours après 
+    // la date inscrite dans la CMS Collection, selon (update)
     let nextDate: string = functionDate(formatData);
     const noDates: string = "--/--/----";
 
@@ -116,55 +116,90 @@ const handleIdValue = async (
     const formatHolidayData: Date = parseDate(nextDate);
     const updateHoliday: string = formatHolidayUpdate(formatHolidayData);
 
-    // Calcul des 2 dernières semaines de l'année en cours
+    /*
+        Calcul des 2 dernières semaines de l'année en cours.
+        La 1ère comprend Noël et la seconde comprend nouvel an (1)
+    */
     const currentYear: number = new Date().getFullYear();
-    const lastWeekPerYear: EndDatesYearsTypes = deuxDernieresSemaines(currentYear);
-    const firstEndLastWeek: string = lastWeekPerYear.avantDerniereSemaine.debut;
-    //const endValDate: string = lastWeekPerYear.derniereSemaine.fin;
-    //console.log("++ Dates 2 dernières semaines de l'année en cours", firstEndLastWeek, endValDate);
+    const lastWeeksPerYear: EndDatesYearsTypes = deuxDernieresSemaines(currentYear);
 
-    // A vérifier
-    // Date du début d'année pour 10 ans... Il en manque 2...
-    const datesPremieresDates: string[] = ['05/01/2026', '04/01/2027', '03/01/2028', 
-        '08/01/2029', '07/01/2030', '06/01/2031', '05/01/2032', '03/01/2033'];
+    // 1er et second lundi des vacances
+    const firstLundiVacances: string = lastWeeksPerYear.avantDerniereSemaine.debut;
+    const secondLundiVacances: string = lastWeeksPerYear.derniereSemaine.debut;
 
-    const datesStartYear: boolean = datesPremieresDates.includes(nextDate);
-    console.log(datesStartYear, "datesStartYear");
+    // 1er et second vendredi des vacances
+    const firstFridayHoliday: string = lastWeeksPerYear.avantDerniereSemaine.fin;
+    const secondFridayHoliday: string = lastWeeksPerYear.derniereSemaine.fin;
 
-    // Dates des vacances
-    if (nextDate !== firstEndLastWeek) {
+    console.log("+ Dates 1er lundi et 1er vendredi (vacances)", firstLundiVacances, firstFridayHoliday);
+    console.log("++ Dates 2er lundi et 2er vendredi (vacances)", secondLundiVacances, secondFridayHoliday);
+
+
+
+    // Date début d'année du LUNDI pour 10 ans.
+    const datesStartYearArray: string[] = ['05/01/2026', '04/01/2027', '03/01/2028', 
+        '08/01/2029', '07/01/2030', '06/01/2031', '05/01/2032', '03/01/2033', '02/01/2034', 
+        '08/01/2035'];
+    
+    // nextDate correspond au premier lundi après les vacances.
+    // si true, on fixer le update en conséquence (-3 ou -54jours avant ???)
+    // si -3j => dates à générer | si -54j => vendredi à trouver
+    const dateStartYear: boolean = datesStartYearArray.includes(nextDate);
+
+    console.log(dateStartYear, "datesStartYear");
+
+    // Dates des vacances (PAS DE noDates !!!)
+    // si date !== date du 1er lundi des vacances && si date !== date 2ème lundi des vacances
+    if (nextDate !== firstLundiVacances && nextDate !== secondLundiVacances) {
         console.log(`MAJ du CMS par idValue ${idValue}: ${nextDate}`, 
             "correspondant à", `Semaine ${semaine}`, cours);
         //await updateCMSItem(itemId, idValue, nextDate);
-    } else if (nextDate === firstEndLastWeek) {
+
+    // si date === date du 1er lundi des vacances
+    } else if (nextDate === firstLundiVacances) {
         const currentIndex = informations.findIndex((info: { idValue: number; }) => 
             info.idValue === idValue
         );
         if (currentIndex !== -1) { // 18 = 2 x 9 cours = 2 semaines vacances
             for (let i = currentIndex; i < informations.length; i++) {
                 const nextItem = informations[i];
-                console.log("!!! Ces dates tombent sur les vacances !!!", nextItem.idValue, noDates, nextItem.cours);
+                console.log("!!! Ces dates tombent sur la 1ère semaine vacances !!!", 
+                    nextItem.idValue, noDates, nextItem.cours);
                 //await updateCMSItem(nextItem.itemId, nextItem.idValue, noDates);
             }
         }
         return;
+    // si date === date 2ème lundi des vacances => pas besoin
     }
 
     // Update dans 8 semaines
     if (idValue === 1) {
         dateToUpdate.push(update);
         await saveUpdateDates();
-        //await overwriteFile();
         console.log("Update programmer pour dans 8 semaines !");
         return;
-    } else if (datesStartYear && idValue !== 1) {
-        // Update dans - 3 jours
+    // Update dans - 3 jours ou -54 jours (en ciblant vendredi) ???
+    // lundi avec id 1 && date 1er lundi début d'année
+    } else if ((idValue !== 1) && dateStartYear) {
         dateToUpdate.push(updateHoliday);
         await overwriteFile();
+
         console.log("!!! Happy New Year !!! Update programmer pour dans 8 semaines !");
         //await updateCMSItem(itemId, idValue, nextDate);
-        return;
+        // return;
+
+    // idValue === 1 && date !== 1er lundi des vacances
+    } else if ((idValue === 1) && (nextDate !== firstLundiVacances) && (nextDate !== secondLundiVacances)) {
+        dateToUpdate.push(update);
+        await saveUpdateDates();
+        console.log("Update programmer pour dans 8 semaines !");
+        // await updateCMSItem(itemId, idValue, nextDate);
+        // return;
     }
+    // idValue === 1 && date !== 1er lundi des vacances
+    // } else if ((idValue !== 1) && (nextDate !== secondLundiVacances)) {
+
+    // }
 };
 
 // -----------------------------
