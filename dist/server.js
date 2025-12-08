@@ -113,10 +113,10 @@ const handleIdValue = async (itemId, idValue, date, semaine, cours, formattedDat
     // console.log("+ Dates 1er lundi et 1er vendredi (vacances)", firstLundiVacances);
     // console.log("++ Dates 2er lundi et 2er vendredi (vacances)", secondLundiVacances);
     const aujourdHui = new Date();
-    //const moisActuel: number = aujourdHui.getMonth();
+    const moisActuel = aujourdHui.getMonth();
     // test 5
-    const moisActuel = 0;
-    // console.log("nextDate", nextDate);
+    //const moisActuel: number = 0;
+    //console.log("nextDate", nextDate);
     if (idValue === 1) {
         dateToUpdate.push(update);
         await saveUpdateDates();
@@ -136,6 +136,7 @@ const handleIdValue = async (itemId, idValue, date, semaine, cours, formattedDat
                     const nextItem = informations[i];
                     console.log("!!! Ces dates tombent sur la 1ère semaine vacances !!!", nextItem.itemId, nextItem.idValue, noDates);
                     await updateCMSItem(nextItem.itemId, nextItem.idValue, noDates);
+                    return;
                 }
                 return;
             }

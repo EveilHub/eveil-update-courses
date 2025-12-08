@@ -99,7 +99,6 @@ const handleIdValue = async (
     // Update prog le vendredi de la 8ème semaine, à 08:00
     const update: string = formatUpdateFriday(formatDateAujourdHui);
 
-
     /*
         Génère des dates pour les 8ère semaines de l'année
         pour n'importe quelle année, à partir du vendredi
@@ -144,7 +143,7 @@ const handleIdValue = async (
     // test 5
     //const moisActuel: number = 0;
         
-    // console.log("nextDate", nextDate);
+    //console.log("nextDate", nextDate);
 
     if (idValue === 1) {
         dateToUpdate.push(update);
@@ -168,6 +167,7 @@ const handleIdValue = async (
                     console.log("!!! Ces dates tombent sur la 1ère semaine vacances !!!",
                         nextItem.itemId, nextItem.idValue, noDates);
                     await updateCMSItem(nextItem.itemId, nextItem.idValue, noDates);
+                    return;
                 }
                 return;
             }
