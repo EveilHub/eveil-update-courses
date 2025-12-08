@@ -210,3 +210,22 @@ Pour le time :
 
 Vacances : 22 dec - 04 janv
 Les cours reboot à la semaine 1 après les vacances !!!
+
+```
+    const aujourdHui: Date = new Date();
+    const moisActuel: number = aujourdHui.getMonth();
+    const premierJourAnnee = new Date(aujourdHui.getFullYear(), 0, 1);
+        
+    console.log("nextDate", nextDate);
+    console.log("aujourdHui", aujourdHui); // aujourdHui 2025-12-08T07:31:38.034Z
+    console.log("premierJourAnnee", premierJourAnnee); // premierJourAnnee 2024-12-31T23:00:00.000Z
+```
+
+## TEST
+
+nb de jours après update:
+- update du friday
+- jours cms collection
+
+- update de la semaine du nouvel an
+- erreur
