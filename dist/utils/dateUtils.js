@@ -75,34 +75,6 @@ const deuxDernieresSemaines = (annee) => {
 };
 exports.deuxDernieresSemaines = deuxDernieresSemaines;
 /*
-2025
-{
-  "avantDerniereSemaine": {
-    "debut": "22/12/2025",
-    "fin": "28/12/2025"
-  },
-  "derniereSemaine": {
-    "debut": "29/12/2025",
-    "fin": "04/01/2026"
-  }
-}
-
-2026
-{
-  "avantDerniereSemaine": {
-    "debut": "21/12/2026",
-    "fin": "27/12/2026"
-  },
-  "derniereSemaine": {
-    "debut": "28/12/2026",
-    "fin": "03/01/2027"
-  }
-}
-*/
-//console.log(deuxDernieresSemaines(2025));
-// const x: number = new Date().getFullYear();
-// console.log(deuxDernieresSemaines(x));
-/*
     Génère des dates pour les 8 première semaines,
     chaque nouvelle année après la première semaine
     du nouvel an.
@@ -157,35 +129,3 @@ const generateCourseDates = (year) => {
     return courses;
 };
 exports.generateCourseDates = generateCourseDates;
-// Exemple d'utilisation pour l'année 2025
-//let year: number = new Date().getFullYear(); // Pour l'année actuelle
-//let coursesForYear: {day: string, date: string}[] = generateCourseDates(year);
-// Affichage des résultats
-//console.log(coursesForYear);
-/* coursesForYear.forEach(course => {
-  console.log(`Date: ${course.date}`);
-}); */
-/*
-[
-  { "day": "Lundi", "date": "06/01/2025" },
-  { "day": "Lundi", "date": "06/01/2025" },
-  { "day": "Lundi", "date": "06/01/2025" },
-  { "day": "Mardi", "date": "07/01/2025" },
-  { "day": "Mardi", "date": "07/01/2025" },
-  { "day": "Mercredi", "date": "08/01/2025" },
-  { "day": "Mercredi", "date": "08/01/2025" },
-  { "day": "Jeudi", "date": "09/01/2025" },
-  { "day": "Jeudi", "date": "09/01/2025" },
-  { "day": "Lundi", "date": "13/01/2025" },
-  { "day": "Lundi", "date": "13/01/2025" },
-  { "day": "Lundi", "date": "13/01/2025" },
-  { "day": "Mardi", "date": "14/01/2025" },
-  { "day": "Mardi", "date": "14/01/2025" },
-  { "day": "Mercredi", "date": "15/01/2025" },
-  { "day": "Mercredi", "date": "15/01/2025" },
-  { "day": "Jeudi", "date": "16/01/2025" },
-  { "day": "Jeudi", "date": "16/01/2025" },
-  ...
-]
-*/
-// trouver le vendredi de la semaine du nouvel an pour le update !

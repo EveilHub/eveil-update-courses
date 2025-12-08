@@ -1,11 +1,11 @@
 import type { DataType, ItemsType, InformationsType, EndDatesYearsTypes } from "./types/types";
 const dotenv = require('dotenv');
+dotenv.config();
 const cron = require('node-cron');
 const express = require("express");
 const fs = require('fs').promises;
 const path = require("path");
 import { parseDate, functionDate, formatUpdateFriday, deuxDernieresSemaines, generateCourseDates } from "./utils/dateUtils";
-dotenv.config();
 
 const UPDATE_FILE = path.join(__dirname, "./utils/update-dates.json");
 
@@ -84,21 +84,21 @@ const handleIdValue = async (
     idValue: number,
     date: string,
     semaine: string,
-    cours: string
+    cours: string,
+    formattedDate: string
 ): Promise<void> => {
 
     const formatData: Date = parseDate(date);
-    const formatUpdateData: Date = parseDate(date);
+    //const formatUpdateData: Date = parseDate(date);
+    const formatDateAujourdHui: Date = parseDate(formattedDate);
 
-    /*  
-        Update des dates dans la CMS Collection, 63 jours après
-        la date inscrite dans la CMS Collection, selon (update)
-    */
-    let nextDate: string = functionDate(formatData); // Déjà +63j !!!
-    // Update prog le vendredi de la 8ème semaines, à 08:00
-    const update: string = formatUpdateFriday(formatUpdateData);
-    // Si les dates tombent sur les vacances
+    // Date générée avec +63 jours
+    let nextDate: string = functionDate(formatData);
+    // Si les dates de nextDate tombent sur les vacances
     const noDates: string = "--/--/----";
+    // Update prog le vendredi de la 8ème semaine, à 08:00
+    const update: string = formatUpdateFriday(formatDateAujourdHui);
+
 
     /*
         Génère des dates pour les 8ère semaines de l'année
@@ -106,9 +106,14 @@ const handleIdValue = async (
         de la semaine du nouvel an. Soit 1 semaine avant
         la génération des dates pour les 8 semaines.
     */
+
     const currentYear: number = new Date().getFullYear();
+
+    // test 4 nouvelle année
+    // const currentYear: number = 2026;
+    
     let coursesForStartYear: {day: string, date: string}[] = generateCourseDates(currentYear);
-    //console.log("generation dates for coursesForStartYear", coursesForStartYear);
+    // console.log("generation dates for coursesForStartYear", coursesForStartYear);
 
     /*
         Calcul des 2 dernières semaines de l'année en cours.
@@ -124,8 +129,12 @@ const handleIdValue = async (
     
     const aujourdHui: Date = new Date();
     const moisActuel: number = aujourdHui.getMonth();
+
+    // test 5
+    // const moisActuel: number = 0;
         
     // console.log("nextDate", nextDate);
+
 
     if (idValue === 1) {
         dateToUpdate.push(update);
@@ -133,12 +142,10 @@ const handleIdValue = async (
         console.log("Update programmer pour dans 8 semaines !");
     } else {
         console.log("No item to update !");
-    }
+    };
 
-    if (moisActuel === 1) {
-        // +63j
+    if (moisActuel > 0) {
         // console.log("Mois actuel > janvier", moisActuel);
-
         if ((nextDate === firstLundiVacances)) {
             const currentIndex = informations.findIndex((info: { idValue: number; }) => 
                 info.idValue === idValue
@@ -162,7 +169,7 @@ const handleIdValue = async (
               `Semaine ${semaine}`, cours);
             // await updateCMSItem(itemId, idValue, nextDate);
         }
-    } else if (moisActuel === 11) {
+    } else if (moisActuel === 0) {
         // Génère les dates pour les 8 première semaines de l'année
         const secondIndex = informations.findIndex((info: { idValue: number; }) => 
             info.idValue === idValue
@@ -180,14 +187,6 @@ const handleIdValue = async (
     } else {
         console.log("Error: something went wrong with month !!!");
     };
-
-    // if (idValue === 1) {
-    //     dateToUpdate.push(update);
-    //     await saveUpdateDates();
-    //     console.log("Update programmer pour dans 8 semaines !");
-    // } else {
-    //     console.log("No item to update !");
-    // }
 };
 
 // -----------------------------
@@ -263,35 +262,48 @@ const fetchCMSData = async (): Promise<InformationsType[] | string> => {
     now.setHours(8, 0, 0, 0);
     // --- ----------------------------- ---
 
+    // Fn() qui sert à formatter les dates pour ci-dessous
     const pad = (n: number) => String(n).padStart(2, "0");
-
     const day = pad(now.getDate());
     const month = pad(now.getMonth() + 1);
     const year = now.getFullYear();
     const hours = pad(now.getHours());
     const minutes = pad(now.getMinutes());
 
+    // Date du jour (vendredi) à comparer avec le vendredi de la semaine du nouvel an
     const formattedDate = `${day}/${month}/${year}`;
+
+    // test 1
+    //const formattedDate: string = "02/01/2026";
+
+    // Date du jour (vendredi) à comparer avec la date du fichier update-dates.json
     const formattedDateHoursMin = `${formattedDate} ${hours}:${minutes}`;
 
+    // test 2
+    //const formattedDateHoursMin: string = "02/01/2026 08:00";
+
+    // Date du fichier update-dates.json (vendredi)
+    const lastFridayJsonRecorded: string | undefined = dateToUpdate.at(-1);
+
+    // test 3
+    //const lastFridayJsonRecorded: string | undefined = "02/01/2026 08:00";
+
+    // console.log("*** lastFridayJsonRecorded ***", lastFridayJsonRecorded);
     // console.log("*** formattedDateHoursMin ***", formattedDateHoursMin);
     // console.log("*** formattedDate ***", formattedDate);
 
-    /*
-        Vérifie si la date du jour correspond à la date
-        du dernier UPDATE programmé (JSON file)!
-    */
-    const lastFridayJsonRecorded: string | undefined = dateToUpdate.at(-1);
-    // console.log("*** lastFridayJsonRecorded ***", lastFridayJsonRecorded);
-    
+    // Instancie le 1er vendredi de l'année qui tombe sur la semaine du nouvel an
     const currentYear: number = new Date().getFullYear();
     const lastWeeksPerYear: EndDatesYearsTypes = deuxDernieresSemaines(currentYear);
     const secondFridayHoliday: string = lastWeeksPerYear.derniereSemaine.fin;
 
+    // test 4
+    // const secondFridayHoliday: string = "02/01/2026";
+
     /*
-        Si le dernier vendredi enregistrer dans le fichier json correspond à aujourd'hui,
-        ou si le 1er vendredi de l'année correspond à la date d'aujourd'hui la fn() 
-        handleIdValue() est appelée.
+        Si le dernier vendredi enregistré dans "update-dates.json" correspond 
+        à aujourd'hui, ou si le 1er vendredi de l'année correspond à la date 
+        d'aujourd'hui => la fn() handleIdValue() est appelée.
     */
     if (formattedDateHoursMin === lastFridayJsonRecorded || formattedDate === secondFridayHoliday) {
         try {
@@ -308,7 +320,8 @@ const fetchCMSData = async (): Promise<InformationsType[] | string> => {
                         item.idValue,
                         item.date,
                         item.semaine,
-                        item.cours
+                        item.cours,
+                        formattedDate
                     )
                 };
             };
@@ -322,24 +335,24 @@ const fetchCMSData = async (): Promise<InformationsType[] | string> => {
         return formattedDateHoursMin;
     }
 };
-//fetchCMSData();
+fetchCMSData();
 
 /*
-    Fonction cron qui sert à lancer la function fetchCMSData();
-    Le lancement est programmé pour chaque vendredi à 08:00 ("* 8 * * 5")
+    Lancement de la fonction fetchCMSData() programmé pour 
+    chaque vendredi à 08:00 ("* 8 * * 5")
 */
-cron.schedule("32 11 * * 1", async (): Promise<void> => {
-    const now = new Date();
-    console.log("------ Cron Job lancé ------");
-    console.log(`Date et heure actuelles : ${now.toLocaleString()}`);
-    try {
-        await fetchCMSData();
-        console.log("fetchCMSData() terminé avec succès !");
-    } catch (err) {
-        console.error("Erreur lors de fetchCMSData() :", err);
-    }
-    console.log("---------------------------");
-});
+// cron.schedule("01 12 * * 1", async (): Promise<void> => {
+//     const now = new Date();
+//     console.log("------ Cron Job lancé ------");
+//     console.log(`Date et heure actuelles : ${now.toLocaleString()}`);
+//     try {
+//         await fetchCMSData();
+//         console.log("fetchCMSData() terminé avec succès !");
+//     } catch (err) {
+//         console.error("Erreur lors de fetchCMSData() :", err);
+//     }
+//     console.log("---------------------------");
+// });
 
 app.listen(PORT, () => {
     console.log(`Serveur en cours d'exécution sur http://localhost:${PORT}`);

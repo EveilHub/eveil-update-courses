@@ -223,9 +223,24 @@ Les cours reboot à la semaine 1 après les vacances !!!
 
 ## TEST
 
-nb de jours après update:
-- update du friday
+Nb de jours après update:
+- update du friday nouvel an (1ère semaine) - done !!!
+- update du friday normal (1ère semaine) - ??? !!!
 - jours cms collection
 
-- update de la semaine du nouvel an
 - erreur
+
+`update-dates.json` :
+- vendredi suivant la génération de date - done !!!
+- date suivante placée avant - done !!!
+- test avec nouvelle année (générer de nouvelles dates) - done !!!
+- test du - ??? !!!
+- 
+
+
+## Console.log()
+
+console.log("*** lastFridayJsonRecorded ***", lastFridayJsonRecorded);
+console.log("*** formattedDateHoursMin ***", formattedDateHoursMin);
+console.log("*** formattedDate ***", formattedDate);
+
