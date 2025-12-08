@@ -244,3 +244,57 @@ console.log("*** lastFridayJsonRecorded ***", lastFridayJsonRecorded);
 console.log("*** formattedDateHoursMin ***", formattedDateHoursMin);
 console.log("*** formattedDate ***", formattedDate);
 
+
+!!! Ces dates tombent sur la 1ère semaine vacances !!! 19 --/--/---- Réunion de chantier
+Item 69147b868319e46d2e78fb67 mis à jour avec succès: --/--/----
+No item to update !
+!!! Ces dates tombent sur la 1ère semaine vacances !!! 20 --/--/---- Café-Accueil
+Item 69147daa98abf8799e0a4695 mis à jour avec succès: --/--/----
+No item to update !
+!!! Ces dates tombent sur la 1ère semaine vacances !!! 21 --/--/---- Réinventer le futur
+Item 69147e2c328bc43c0eb2badb mis à jour avec succès: --/--/----
+No item to update !
+2) MAJ du CMS par idValue 22: 23/12/2025 correspondant à Semaine 3 Gestion d’entreprise
+Item 69147e92e92c106e1cadcc48 mis à jour avec succès: 23/12/2025
+No item to update !
+2) MAJ du CMS par idValue 23: 23/12/2025 correspondant à Semaine 3 Entreprise Apprenant
+Item 69147f1f61bc8c31eb446251 mis à jour avec succès: 23/12/2025
+No item to update !
+2) MAJ du CMS par idValue 24: 24/12/2025 correspondant à Semaine 3 Immersion Synergie
+Item 69147f6f64b4fd1a72a19bd7 mis à jour avec succès: 24/12/2025
+No item to update !
+2) MAJ du CMS par idValue 25: 24/12/2025 correspondant à Semaine 3 Développement Posture Pro
+Item 69147fd331c45431da9aa1c5 mis à jour avec succès: 24/12/2025
+No item to update !
+2) MAJ du CMS par idValue 26: 25/12/2025 correspondant à Semaine 3 Gestion d’entreprise
+Item 69148026adcfc42f9dbeb5fa mis à jour avec succès: 25/12/2025
+No item to update !
+2) MAJ du CMS par idValue 27: 25/12/2025 correspondant à Semaine 3 Relation d'Aide
+Item 691480940bedb25ae8e16d8e mis à jour avec succès: 25/12/2025
+No item to update !
+2) MAJ du CMS par idValue 28: 29/12/2025 correspondant à Semaine 4 Réunion de chantier
+Item 692e9a17a6d5fa1b5d473f11 mis à jour avec succès: 29/12/2025
+No item to update !
+2) MAJ du CMS par idValue 29: 29/12/2025 correspondant à Semaine 4 Café-Accueil
+Item 692e9b2430edb0279b33cd4a mis à jour avec succès: 29/12/2025
+No item to update !
+2) MAJ du CMS par idValue 30: 29/12/2025 correspondant à Semaine 4 Réinventer le futur
+Item 692e9b944d03440a7698ac66 mis à jour avec succès: 29/12/2025
+No item to update !
+2) MAJ du CMS par idValue 31: 30/12/2025 correspondant à Semaine 4 Gestion d’entreprise
+Item 692e9c0c02dae2aee1c48497 mis à jour avec succès: 30/12/2025
+No item to update !
+2) MAJ du CMS par idValue 32: 30/12/2025 correspondant à Semaine 4 Entreprise Apprenant
+Item 692e9c7c31c5fc33cd829f70 mis à jour avec succès: 30/12/2025
+No item to update !
+2) MAJ du CMS par idValue 33: 31/12/2025 correspondant à Semaine 4 Immersion Pont Treize
+Item 692eaa6920e7d258c3cabd2c mis à jour avec succès: 31/12/2025
+No item to update !
+2) MAJ du CMS par idValue 34: 31/12/2025 correspondant à Semaine 4 Développement Posture Pro
+Item 692eab2a7277e0127a8fa60e mis à jour avec succès: 31/12/2025
+No item to update !
+2) MAJ du CMS par idValue 35: 01/01/2026 correspondant à Semaine 4 Gestion d’entreprise
+Item 692eabbd579bb15c48d39c8b mis à jour avec succès: 01/01/2026
+No item to update !
+2) MAJ du CMS par idValue 36: 01/01/2026 correspondant à Semaine 4 Relation d'Aide
+Item 692eac1e807cc992e4cff9ed mis à jour avec succès: 01/01/2026

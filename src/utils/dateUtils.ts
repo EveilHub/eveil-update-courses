@@ -63,20 +63,46 @@ export const deuxDernieresSemaines = (annee: number): EndDatesYearsTypes => {
     let avantDernierLundi: Date = new Date(dernierLundi);
     avantDernierLundi.setDate(dernierLundi.getDate() - 7);
 
-    // Calcul des vendredis
-    // let avantDernierVendredi: Date = new Date(avantDernierLundi);
-    // avantDernierVendredi.setDate(avantDernierLundi.getDate() + 4); // Vendredi (4 jours après lundi)
+    // Calcul des mardis
+    let avantDernierMardi: Date = new Date(avantDernierLundi);
+    avantDernierMardi.setDate(avantDernierLundi.getDate() + 1);
+
+    // Calcul des mercredi
+    let avantDernierMercredi: Date = new Date(avantDernierLundi);
+    avantDernierMercredi.setDate(avantDernierLundi.getDate() + 2);
+
+    // Calcul des jeudis
+    let avantDernierJeudi: Date = new Date(avantDernierLundi);
+    avantDernierJeudi.setDate(avantDernierLundi.getDate() + 3);
+
+    // Calcul des mardis
+    let dernierMardi: Date = new Date(dernierLundi);
+    dernierMardi.setDate(dernierLundi.getDate() + 1);
+
+    // Calcul des mercredi
+    let dernierMercredi: Date = new Date(dernierLundi);
+    dernierMercredi.setDate(dernierLundi.getDate() + 2);
+
+    // Calcul des jeudis
+    let dernierJeudi: Date = new Date(dernierLundi);
+    dernierJeudi.setDate(dernierLundi.getDate() + 3);
 
     let dernierVendredi: Date = new Date(dernierLundi);
     dernierVendredi.setDate(dernierLundi.getDate() + 4); // Vendredi (4 jours après lundi)
 
     return {
         avantDerniereSemaine: {
-            debut: formatDate(avantDernierLundi),
+            lundi: formatDate(avantDernierLundi),
+            mardi: formatDate(avantDernierMardi),
+            mercredi: formatDate(avantDernierMercredi),
+            jeudi: formatDate(avantDernierJeudi),
         },
         derniereSemaine: {
-            debut: formatDate(dernierLundi),
-            fin: formatDate(dernierVendredi),
+            lundi: formatDate(dernierLundi),
+            mardi: formatDate(dernierMardi),
+            mercredi: formatDate(dernierMercredi),
+            jeudi: formatDate(dernierJeudi),
+            vendredi: formatDate(dernierVendredi),
         }
     };
 };

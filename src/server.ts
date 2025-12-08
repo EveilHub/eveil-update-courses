@@ -15,24 +15,25 @@ const PORT: number = 3000;
 // Retrieve informations from CMS Collection
 const informations: InformationsType[] = [];
 
-// Load from JSON file
+// Load from update-dates.json
 const loadUpdateDates = async (): Promise<string[]> => {
     try {
         const data = await fs.readFile(UPDATE_FILE, 'utf8');
         return JSON.parse(data);
-    } catch {
+    } catch (err) {
+        console.error("Erreur lors du chargement du fichier :", err);
         return [];
     }
 };
 
 let dateToUpdate: string[] = [];
 
-// On charge les données au démarrage
+// On charge les données depuis update-dates.json au démarrage
 (async () => {
     dateToUpdate = await loadUpdateDates();
 })();
 
-// Save in JSON file (async)
+// Save in update-dates.json
 const saveUpdateDates = async (): Promise<void> => {
     try {
         await fs.writeFile(UPDATE_FILE, JSON.stringify(dateToUpdate, null, 2), 'utf8');
@@ -89,7 +90,6 @@ const handleIdValue = async (
 ): Promise<void> => {
 
     const formatData: Date = parseDate(date);
-    //const formatUpdateData: Date = parseDate(date);
     const formatDateAujourdHui: Date = parseDate(formattedDate);
 
     // Date générée avec +63 jours
@@ -106,7 +106,6 @@ const handleIdValue = async (
         de la semaine du nouvel an. Soit 1 semaine avant
         la génération des dates pour les 8 semaines.
     */
-
     const currentYear: number = new Date().getFullYear();
 
     // test 4 nouvelle année
@@ -120,9 +119,21 @@ const handleIdValue = async (
         La 1ère comprend Noël et la seconde comprend nouvel an.
     */
     const lastWeeksPerYear: EndDatesYearsTypes = deuxDernieresSemaines(currentYear);
-    // 1er et second lundi des vacances
-    const firstLundiVacances: string = lastWeeksPerYear.avantDerniereSemaine.debut;
-    const secondLundiVacances: string = lastWeeksPerYear.derniereSemaine.debut;
+    const firstLundiVacances: string = lastWeeksPerYear.avantDerniereSemaine.lundi;
+    const firstMardiVacances: string = lastWeeksPerYear.avantDerniereSemaine.mardi;
+    const firstMercrediVacances: string = lastWeeksPerYear.avantDerniereSemaine.mercredi;
+    const firstJeudiVacances: string = lastWeeksPerYear.avantDerniereSemaine.jeudi;
+    const secondLundiVacances: string = lastWeeksPerYear.derniereSemaine.lundi;
+    const secondMardiVacances: string = lastWeeksPerYear.derniereSemaine.mardi;
+    const secondMercrediVacances: string = lastWeeksPerYear.derniereSemaine.mercredi;
+    const secondJeudiVacances: string = lastWeeksPerYear.derniereSemaine.jeudi;
+
+    const holidays: string[] = [
+        firstLundiVacances, firstMardiVacances, firstMercrediVacances, firstJeudiVacances,
+        secondLundiVacances, secondMardiVacances, secondMercrediVacances, secondJeudiVacances
+    ];
+
+    const verifyHolidays: boolean = holidays.includes(nextDate);
 
     // console.log("+ Dates 1er lundi et 1er vendredi (vacances)", firstLundiVacances);
     // console.log("++ Dates 2er lundi et 2er vendredi (vacances)", secondLundiVacances);
@@ -131,10 +142,9 @@ const handleIdValue = async (
     const moisActuel: number = aujourdHui.getMonth();
 
     // test 5
-    // const moisActuel: number = 0;
+    //const moisActuel: number = 0;
         
     // console.log("nextDate", nextDate);
-
 
     if (idValue === 1) {
         dateToUpdate.push(update);
@@ -146,28 +156,25 @@ const handleIdValue = async (
 
     if (moisActuel > 0) {
         // console.log("Mois actuel > janvier", moisActuel);
-        if ((nextDate === firstLundiVacances)) {
+        if (verifyHolidays) {
+            // Génère "--/--/----" pour les jours restants pour les 8 semaines
             const currentIndex = informations.findIndex((info: { idValue: number; }) => 
                 info.idValue === idValue
             );
-            if (currentIndex !== -1) { // 18 = 2 x 9 cours = 2 semaines vacances
+            
+            if (currentIndex !== -1) {
                 for (let i = currentIndex; i < informations.length; i++) {
                     const nextItem = informations[i];
                     console.log("!!! Ces dates tombent sur la 1ère semaine vacances !!!",
-                        nextItem.idValue, noDates, nextItem.cours);
-                    //await updateCMSItem(nextItem.itemId, nextItem.idValue, noDates);
+                        nextItem.itemId, nextItem.idValue, noDates);
+                    await updateCMSItem(nextItem.itemId, nextItem.idValue, noDates);
                 }
                 return;
             }
-        } else if ((nextDate !== firstLundiVacances) && (nextDate !== secondLundiVacances)) {
-
-            console.log(`1) MAJ du CMS par idValue ${idValue}: ${nextDate}`, "correspondant à",
-                `Semaine ${semaine}`, cours);
-            //await updateCMSItem(itemId, idValue, nextDate);
         } else {
             console.log(`2) MAJ du CMS par idValue ${idValue}: ${nextDate}`, "correspondant à",
               `Semaine ${semaine}`, cours);
-            // await updateCMSItem(itemId, idValue, nextDate);
+            await updateCMSItem(itemId, idValue, nextDate);
         }
     } else if (moisActuel === 0) {
         // Génère les dates pour les 8 première semaines de l'année
@@ -179,7 +186,7 @@ const handleIdValue = async (
                 const nextItem_2 = informations[i];
                 let course = coursesForStartYear[i];
                 console.log(nextItem_2.itemId, nextItem_2.idValue, `Date of courses: ${course.date}`);
-                // await updateCMSItem(nextItem_2.itemId, nextItem_2.idValue, course.date);
+                await updateCMSItem(nextItem_2.itemId, nextItem_2.idValue, course.date);
                 return;
             };
             return;
@@ -295,7 +302,7 @@ const fetchCMSData = async (): Promise<InformationsType[] | string> => {
     // Instancie le 1er vendredi de l'année qui tombe sur la semaine du nouvel an
     const currentYear: number = new Date().getFullYear();
     const lastWeeksPerYear: EndDatesYearsTypes = deuxDernieresSemaines(currentYear);
-    const secondFridayHoliday: string = lastWeeksPerYear.derniereSemaine.fin;
+    const secondFridayHoliday: string = lastWeeksPerYear.derniereSemaine.vendredi;
 
     // test 4
     // const secondFridayHoliday: string = "02/01/2026";
@@ -328,7 +335,7 @@ const fetchCMSData = async (): Promise<InformationsType[] | string> => {
         } catch (err) {
             console.log("Erreur lors avec informations.sort() et informations.forEach()", err);
         }
-        //await publishSite();
+        await publishSite();
         return informations;
     } else {
         console.log("Nothing to update !", formattedDateHoursMin);
@@ -341,18 +348,18 @@ fetchCMSData();
     Lancement de la fonction fetchCMSData() programmé pour 
     chaque vendredi à 08:00 ("* 8 * * 5")
 */
-// cron.schedule("01 12 * * 1", async (): Promise<void> => {
-//     const now = new Date();
-//     console.log("------ Cron Job lancé ------");
-//     console.log(`Date et heure actuelles : ${now.toLocaleString()}`);
-//     try {
-//         await fetchCMSData();
-//         console.log("fetchCMSData() terminé avec succès !");
-//     } catch (err) {
-//         console.error("Erreur lors de fetchCMSData() :", err);
-//     }
-//     console.log("---------------------------");
-// });
+cron.schedule("24 15 * * 1", async (): Promise<void> => {
+    const now = new Date();
+    console.log("------ Cron Job lancé ------");
+    console.log(`Date et heure actuelles : ${now.toLocaleString()}`);
+    try {
+        await fetchCMSData();
+        console.log("fetchCMSData() terminé avec succès !");
+    } catch (err) {
+        console.error("Erreur lors de fetchCMSData() :", err);
+    }
+    console.log("---------------------------");
+});
 
 app.listen(PORT, () => {
     console.log(`Serveur en cours d'exécution sur http://localhost:${PORT}`);

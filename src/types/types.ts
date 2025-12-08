@@ -41,10 +41,16 @@ export type InformationsType = {
 
 export type EndDatesYearsTypes = {
     avantDerniereSemaine: {
-        debut: string;
+        lundi: string;
+        mardi: string;
+        mercredi: string;
+        jeudi: string;
     },
     derniereSemaine: {
-        debut: string;
-        fin: string;
+        lundi: string;
+        mardi: string;
+        mercredi: string;
+        jeudi: string;
+        vendredi: string;
     }
 };
