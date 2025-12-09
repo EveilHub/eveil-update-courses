@@ -147,6 +147,7 @@ Malgré qu'aucune donnée sensible ne soit partagée, il y quand même une sécu
 
 - TypeScript => fichier `types.ts` contient tous les types de l'API.
 - Gestion des erreurs => try - catch - console.error()
+- Fichier `.env` qui contient toutes les données pour les connexions.
 
 ```
   id-value correspond à l'id_value de la CMS Collection.
