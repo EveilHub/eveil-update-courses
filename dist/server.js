@@ -11,7 +11,8 @@ const UPDATE_FILE = path.join(__dirname, "./utils/update-dates.json");
 const app = express();
 const PORT = 3000;
 // Stock les data
-const informations = [];
+let informations = [];
+let dateToUpdate = [];
 // --------------------------------------------------
 // Lecture & Ecriture dans ./utils/update-dates.json
 // --------------------------------------------------
@@ -22,15 +23,15 @@ const loadUpdateDates = async () => {
         return JSON.parse(data);
     }
     catch (err) {
-        console.error("Erreur lors du chargement du fichier :", err);
+        if (err.code === "ENOENT") {
+            console.warn("Fichier non trouvé, création d'un nouveau.");
+        }
+        else {
+            console.error("Erreur lors du chargement du fichier :", err);
+        }
         return [];
     }
 };
-let dateToUpdate = [];
-// Load data depuis update-dates.json au démarrage
-(async () => {
-    dateToUpdate = await loadUpdateDates();
-})();
 // Save in update-dates.json
 const saveUpdateDates = async () => {
     try {
@@ -41,6 +42,10 @@ const saveUpdateDates = async () => {
         console.error("Erreur lors de la sauvegarde du vendredi :", err);
     }
 };
+// Load data depuis update-dates.json au démarrage
+(async () => {
+    dateToUpdate = await loadUpdateDates();
+})();
 // -----------
 // UPDATE CMS
 // -----------
@@ -69,7 +74,7 @@ const updateCMSItem = async (itemId, idValue, nouvelleDate) => {
     }
     catch (err) {
         console.error("Erreur lors du PATCH :", err);
-        return;
+        // return;
     }
 };
 // -----------------------------
@@ -92,8 +97,8 @@ const handleIdValue = async (itemId, idValue, date, semaine, cours, formattedDat
         la génération des dates pour les 8 semaines.
     */
     const currentYear = new Date().getFullYear();
-    // test 4 nouvelle année
-    // const currentYear: number = 2026;
+    // test 5 nouvelle année
+    //const currentYear: number = 2026;
     let coursesForStartYear = (0, dateUtils_1.generateCourseDates)(currentYear);
     // console.log("generation dates for coursesForStartYear", coursesForStartYear);
     /*
@@ -101,24 +106,11 @@ const handleIdValue = async (itemId, idValue, date, semaine, cours, formattedDat
         La 1ère comprend Noël et la seconde comprend nouvel an.
     */
     const lastWeeksPerYear = (0, dateUtils_1.deuxDernieresSemaines)(currentYear);
-    const firstLundiVacances = lastWeeksPerYear.avantDerniereSemaine.lundi;
-    const firstMardiVacances = lastWeeksPerYear.avantDerniereSemaine.mardi;
-    const firstMercrediVacances = lastWeeksPerYear.avantDerniereSemaine.mercredi;
-    const firstJeudiVacances = lastWeeksPerYear.avantDerniereSemaine.jeudi;
-    const secondLundiVacances = lastWeeksPerYear.derniereSemaine.lundi;
-    const secondMardiVacances = lastWeeksPerYear.derniereSemaine.mardi;
-    const secondMercrediVacances = lastWeeksPerYear.derniereSemaine.mercredi;
-    const secondJeudiVacances = lastWeeksPerYear.derniereSemaine.jeudi;
-    const holidays = [
-        firstLundiVacances, firstMardiVacances, firstMercrediVacances, firstJeudiVacances,
-        secondLundiVacances, secondMardiVacances, secondMercrediVacances, secondJeudiVacances
-    ];
+    const holidays = Object.values(lastWeeksPerYear).flatMap((week) => Object.values(week));
     const verifyHolidays = holidays.includes(nextDate);
-    // console.log("+ Dates 1er lundi et 1er vendredi (vacances)", firstLundiVacances);
-    // console.log("++ Dates 2er lundi et 2er vendredi (vacances)", secondLundiVacances);
     const aujourdHui = new Date();
     const moisActuel = aujourdHui.getMonth();
-    // test 5
+    // test 6
     // const moisActuel: number = 0;
     // console.log("nextDate", nextDate);
     if (idValue === 1) {
@@ -190,7 +182,7 @@ const publishSite = async () => {
         if (!response.ok) {
             const errorData = await response.json();
             console.error("Erreur lors de la publication :", errorData);
-            return null;
+            return;
         }
         const data = await response.json();
         console.log("Site publié avec succès !");
@@ -198,22 +190,26 @@ const publishSite = async () => {
     }
     catch (err) {
         console.error("Erreur lors de la publication :", err);
-        return null;
+        // return null;
     }
 };
 // ---------------
 // FETCH CMS DATA
 // ---------------
 const fetchCMSData = async () => {
-    const response = await fetch(`https://api.webflow.com/v2/collections/${process.env.COLLECTION_ID}/items?offset=0&limit=100`, {
-        headers: {
-            'Authorization': `Bearer ${process.env.WEBFLOW_API_TOKEN}`,
-            'accept-version': '2.0.0'
-        }
-    });
-    const data = await response.json();
-    // console.log("data", data);
+    //let informations: InformationsType[] = [];
     try {
+        const response = await fetch(`https://api.webflow.com/v2/collections/${process.env.COLLECTION_ID}/items?offset=0&limit=100`, {
+            headers: {
+                'Authorization': `Bearer ${process.env.WEBFLOW_API_TOKEN}`,
+                'accept-version': '2.0.0'
+            }
+        });
+        if (!response.ok) {
+            throw new Error(`Webflow API error: ${response.status}`);
+        }
+        const data = await response.json();
+        // console.log("data", data);
         if (data.items && data.items.length > 0) {
             data.items.forEach((item) => {
                 //console.log(item.fieldData);
@@ -222,20 +218,21 @@ const fetchCMSData = async () => {
                 const cours = item.fieldData.cours;
                 const itemId = item.id;
                 const idValue = Number(item.fieldData["id-value"]);
-                if (idValue && semaine && date && cours) {
+                if (!isNaN(idValue) && semaine && date && cours) {
                     informations.push({ itemId, idValue, semaine, date, cours });
                 }
             });
         }
     }
     catch (err) {
-        console.log("Erreur avec data.items", err);
+        console.error("Erreur lors de la récupération des données Webflow :", err);
+        return { updated: false, message: `Erreur: ${err.message || err}` };
     }
     // Fixe la date du jour
     const now = new Date();
     // --- À retirer en version finale ---
     now.setHours(8, 0, 0, 0);
-    // --- ----------------------------- ---
+    // --- --------------------------- ---
     // Fn() qui sert à formatter les dates pour ci-dessous
     const pad = (n) => String(n).padStart(2, "0");
     const day = pad(now.getDate());
@@ -255,9 +252,6 @@ const fetchCMSData = async () => {
     const lastFridayJsonRecorded = dateToUpdate.at(-1);
     // test 3
     //const lastFridayJsonRecorded: string | undefined = "02/01/2026 08:00";
-    // console.log("*** lastFridayJsonRecorded ***", lastFridayJsonRecorded);
-    // console.log("*** formattedDateHoursMin ***", formattedDateHoursMin);
-    // console.log("*** formattedDate ***", formattedDate);
     // Instancie le 1er vendredi de l'année qui tombe sur la semaine du nouvel an
     const currentYear = new Date().getFullYear();
     const lastWeeksPerYear = (0, dateUtils_1.deuxDernieresSemaines)(currentYear);
@@ -273,7 +267,7 @@ const fetchCMSData = async () => {
         try {
             informations.sort((a, b) => a.idValue - b.idValue);
             // console.log("informations:", informations);
-            for (let idValueToUpdate = 1; idValueToUpdate <= 36; idValueToUpdate++) {
+            for (let idValueToUpdate = 1; idValueToUpdate <= 72; idValueToUpdate++) {
                 const item = informations.find((info) => info.idValue === idValueToUpdate);
                 if (item) {
                     await handleIdValue(item.itemId, item.idValue, item.date, item.semaine, item.cours, formattedDate);
@@ -281,24 +275,25 @@ const fetchCMSData = async () => {
                 ;
             }
             ;
+            await publishSite();
+            return { updated: true, message: "Mises à jour effectuées avec succès." };
         }
         catch (err) {
-            console.log("Erreur lors avec informations.sort() et informations.forEach()", err);
+            console.error("Erreur lors du traitement des informations :", err);
+            return { updated: false, message: `Erreur lors du traitement: ${err.message || err}` };
         }
-        await publishSite();
-        return informations;
     }
     else {
         console.log("Nothing to update !", formattedDateHoursMin);
-        return formattedDateHoursMin;
+        return { updated: false, message: "Rien à mettre à jour aujourd'hui." };
     }
 };
-//fetchCMSData();
+fetchCMSData();
 /*
     Lancement de la fonction fetchCMSData() programmé pour
     chaque vendredi à 08:00 ("* 8 * * 5")
 */
-cron.schedule("00 13 * * 2", async () => {
+cron.schedule("15 16 * * 2", async () => {
     const now = new Date();
     console.log("------ Cron Job lancé ------");
     console.log(`Date et heure actuelles : ${now.toLocaleString()}`);

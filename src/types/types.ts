@@ -2,6 +2,12 @@ export type DataType = {
     items: ItemsType[];
 };
 
+
+export type FetchCMSDataResult = {
+    updated: boolean;
+    message: string; 
+};
+
 export type ItemsType = {
     id: string;
     cmsLocaleId: string | null;

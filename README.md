@@ -25,12 +25,13 @@ Tout ce dont quoi l'API a besoin pour se connecter à la CMS Collection, se trou
 
 Les updates se font grâce à `node-cron`, au fichier `update-dates.json`, et au code.
 
-node-cron se délenche tous les vendredi à 08:00 
+node-cron se délenche tous les vendredi à 08:00.
 
 `cron.schedule("* 8 * * 5", async () => {})`.
 
-Les dates sont MAJ en fonction du vendredi (dernier vendredi de la 2ème semaines de vacance ou vendredi de la première 
-semaine de l'année) mois de l'année et du mois dans l'année. 
+Les dates sont MAJ toutes les 8 semaines le vendredi à 08:00, excepté le vendredi de la première semaine de l'année
+(dernière semaine de l'année précédente). Seul ce vendredi peut générer des nouvelles dates pour les 8 premières
+semaines de cours de l'année.
 
 `const moisActuel: number = aujourdHui.getMonth();`
 
@@ -46,6 +47,11 @@ Durant les 2 dernières semaines de l'année, qui sont des semaines de vacances,
 ---
 
 ## En cas de problèmes
+
+// --- À retirer en version finale ---
+Décommenter
+// now.setHours(8, 0, 0, 0);
+// --- --------------------------- ---
 
 Aller dans la fonction handleIdValue() :
 ```
@@ -244,6 +250,25 @@ Nb de jours après update:
 
 ## Console.log()
 
+fn => fetchCMSData()
 console.log("*** lastFridayJsonRecorded ***", lastFridayJsonRecorded);
 console.log("*** formattedDateHoursMin ***", formattedDateHoursMin);
 console.log("*** formattedDate ***", formattedDate);
+
+fn => handleIdValue()
+const firstLundiVacances: string = lastWeeksPerYear.avantDerniereSemaine.lundi;
+const firstMardiVacances: string = lastWeeksPerYear.avantDerniereSemaine.mardi;
+const firstMercrediVacances: string = lastWeeksPerYear.avantDerniereSemaine.mercredi;
+const firstJeudiVacances: string = lastWeeksPerYear.avantDerniereSemaine.jeudi;
+const secondLundiVacances: string = lastWeeksPerYear.derniereSemaine.lundi;
+const secondMardiVacances: string = lastWeeksPerYear.derniereSemaine.mardi;
+const secondMercrediVacances: string = lastWeeksPerYear.derniereSemaine.mercredi;
+const secondJeudiVacances: string = lastWeeksPerYear.derniereSemaine.jeudi;
+
+const holidays: string[] = [
+    firstLundiVacances, firstMardiVacances, firstMercrediVacances, firstJeudiVacances,
+    secondLundiVacances, secondMardiVacances, secondMercrediVacances, secondJeudiVacances
+];
+
+console.log("+ Dates 1er lundi (vacances)", firstLundiVacances);
+console.log("++ Dates 2er lundi (vacances)", secondLundiVacances);
