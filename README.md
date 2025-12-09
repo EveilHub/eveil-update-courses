@@ -52,6 +52,12 @@ Aller dans la fonction handleIdValue() :
 const handleIdValue = async () => {
   ...
   Commenté
+  const currentYear: number = new Date().getFullYear();
+
+  Et décommenté en adaptant à l'année souhaitée
+  // const currentYear: number = 2026;
+
+  Commenté
   const moisActuel: number = aujourdHui.getMonth();
   
   Et décommenté
@@ -73,6 +79,12 @@ const handleIdValue = async () => {
 ```
 const handleIdValue = async () => {
   ...
+  Décommenté
+  // const currentYear: number = new Date().getFullYear();
+
+  Et commenté en adaptant à l'année souhaitée
+  const currentYear: number = 2026;
+
   Décommenté
   // const moisActuel: number = aujourdHui.getMonth();
   
@@ -161,6 +173,7 @@ app.use((req: Request, res: Response, next: NextType) => {
 
 ## Mes aides
 ============
+```
 // ---------------------------------
 // 2. PUBLISH SITE V1 (pages + CMS)
 // ---------------------------------
@@ -177,7 +190,7 @@ await fetch(
     }),
   }
 );
-
+```
 `https://developers.webflow.com/data/docs/working-with-the-cms/manage-collections-and-items#defining-reference-and-multi-reference-fields`
 
 ## API v2 PUBLISH
