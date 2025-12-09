@@ -1,22 +1,49 @@
 # Eveil API
 
-L'API récupère les dates de la CMS Collection et les renvois une fois update à la CMS Collection.
+L'API récupère les dates de la CMS Collection et les renvois à la CMS Collection, une fois que les dates sont update.
+
+Les dates sont updated chaque semaine 8, le vendredi à 08:00, grâce au fichier `update-dates.json` dans lequel sont 
+écrits les dates de MAJ (Mise à Jour).
+
+- Update des dates en début d'année
+
+Au début de chaque année, lors du vendredi de la première semaine de l'année, si le vendredi correspond au vendredi de 
+la première semaine de l'année, le code s'exécute et la génération automatique des dates pour les 8 première semaines 
+de l'année a lieu. Une nouvelle date de MAJ est écrite dans le fichier `update-dates.json` pour que le update se fasse 
+le vendredi de la 8ème semaine.
+
+- Update des dates pour le restant de l'année
+
+Ensuite, la MAJ des dates est à nouveau gérée grâce au fichier `update-dates.json`, chaque vendredi de la 8ème semaine
+et une nouvelle date de MAJ est écrite dans ce même fichier.
 
 ---
 
 ## Update 
 
-- Update toutes les dates des cours pour 8 semaines, tous les vendredi de la 8 semaine (54ème jour) à 08:00 heures !
-Le code récupère la dernière date de la liste qui se trouve dans le fichier `update-dates.json` et la comparre avec celle du jour et l'heure (08:00).
+Les updates se font grâce à `node-cron`, au fichier `update-dates.json`, et au code.
 
-- Durant les semaines de vacances, les cours ne sont pas notés dans la CMS Collection. Ils sautent une semaine ou + selon comment...
-	(!!! demander à Neville et Mattéo pour les dates de vacances et jours fériés !!!)
+Les dates sont MAJ en fonction du vendredi (dernier vendredi de la 2ème semaines de vacance ou vendredi de la première 
+semaine de l'année) mois de l'année et du mois dans l'année. 
+
+`const moisActuel: number = aujourdHui.getMonth();`
+
+Si `moisActuel === 0`, alors nous sommes en janvier et qu'il 
+faut générer des nouvelles dates, plutôt que de reprendre les anciennes de la CMS Collection pour les actualiser.
+(0 = janvier en JavaScript).
+
+Si `moisActuel > 0`, alors la MAJ des dates se fait toutes les 8 semaines de cours, le vendredi. 
+
+
+Durant les 2 dernières semaines de l'année, qui sont des semaines de vacances, les dates sont notées sous la forme de 
+`"--/--/----"` peut importe la semaine sur laquelle ça tombe, ça ne change rien.
 
 ---
 
 ## Attention
 
 - Enlever `now.setHours(8, 0, 0, 0);` sinon, ça sera la date du jour avec 08:00 sur 24 heures... !!!
+
 - Ajouter `cron.schedule("* 8 * * 5", async () => {})` pour que ça se déclenche vendredi à 8h00.
 
 - Pour 3 semaines `idValueToUpdate <= 27` : `for (let idValueToUpdate = 1; idValueToUpdate <= 27; idValueToUpdate++)`
@@ -29,22 +56,19 @@ Le code récupère la dernière date de la liste qui se trouve dans le fichier `
 
 `pnpm run dev`
 
-`pnpm run build`
-
-`lancer les server`
-
-`héberger le server gratuitement`
-
 ## Lancement
+
+- Mode BUILD
 
 `pnpm install`
 
-`pnpm run build`
+`tsc`
 
+- Mode DEV
 
 `npx tsc`
 
-`node dist/server.js`
+`pnpm run dev`
 
 Affichage dans la console ou terminal.
 
