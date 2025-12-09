@@ -12,10 +12,14 @@ const UPDATE_FILE = path.join(__dirname, "./utils/update-dates.json");
 const app = express();
 const PORT: number = 3000;
 
-// Retrieve informations from CMS Collection
+// Stock les data
 const informations: InformationsType[] = [];
 
-// Load from update-dates.json
+// --------------------------------------------------
+// Lecture & Ecriture dans ./utils/update-dates.json
+// --------------------------------------------------
+
+// Load depuis update-dates.json
 const loadUpdateDates = async (): Promise<string[]> => {
     try {
         const data = await fs.readFile(UPDATE_FILE, 'utf8');
@@ -28,7 +32,7 @@ const loadUpdateDates = async (): Promise<string[]> => {
 
 let dateToUpdate: string[] = [];
 
-// On charge les données depuis update-dates.json au démarrage
+// Load data depuis update-dates.json au démarrage
 (async () => {
     dateToUpdate = await loadUpdateDates();
 })();
@@ -89,6 +93,7 @@ const handleIdValue = async (
     formattedDate: string
 ): Promise<void> => {
 
+    // Formatage des dates
     const formatData: Date = parseDate(date);
     const formatDateAujourdHui: Date = parseDate(formattedDate);
 
@@ -96,7 +101,7 @@ const handleIdValue = async (
     let nextDate: string = functionDate(formatData);
     // Si les dates de nextDate tombent sur les vacances
     const noDates: string = "--/--/----";
-    // Update prog le vendredi de la 8ème semaine, à 08:00
+    // Update le vendredi de la 8ème semaine, à 08:00
     const update: string = formatUpdateFriday(formatDateAujourdHui);
 
     /*
@@ -141,9 +146,9 @@ const handleIdValue = async (
     const moisActuel: number = aujourdHui.getMonth();
 
     // test 5
-    //const moisActuel: number = 0;
+    // const moisActuel: number = 0;
         
-    //console.log("nextDate", nextDate);
+    // console.log("nextDate", nextDate);
 
     if (idValue === 1) {
         dateToUpdate.push(update);
@@ -342,13 +347,13 @@ const fetchCMSData = async (): Promise<InformationsType[] | string> => {
         return formattedDateHoursMin;
     }
 };
-fetchCMSData();
+//fetchCMSData();
 
 /*
     Lancement de la fonction fetchCMSData() programmé pour 
     chaque vendredi à 08:00 ("* 8 * * 5")
 */
-cron.schedule("24 15 * * 1", async (): Promise<void> => {
+cron.schedule("00 13 * * 2", async (): Promise<void> => {
     const now = new Date();
     console.log("------ Cron Job lancé ------");
     console.log(`Date et heure actuelles : ${now.toLocaleString()}`);

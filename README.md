@@ -45,6 +45,53 @@ Durant les 2 dernières semaines de l'année, qui sont des semaines de vacances,
 
 ---
 
+## En cas de problèmes
+
+Aller dans la fonction handleIdValue() :
+```
+const handleIdValue = async () => {
+  ...
+  Commenté
+  const moisActuel: number = aujourdHui.getMonth();
+  
+  Et décommenté
+  // const moisActuel: number = 0;
+  ...
+}
+```
+2) Mettre la date du jour dans `update-dates.json`.
+
+3) décommenté //fetchCMSData(); (node-cron ne se lancera pas !)
+
+4) Dans la console, lancé les CMS suivantes : 
+
+`npx tsc`
+
+`pnpm run dev`
+
+5) Ensuite, effacer la dernière date écrite dans : `update-dates.json`.
+```
+const handleIdValue = async () => {
+  ...
+  Décommenté
+  // const moisActuel: number = aujourdHui.getMonth();
+  
+  Et Commenté
+  const moisActuel: number = 0;
+  ...
+}
+```
+
+6) Dans la console, lancé les CMS suivantes : 
+
+`npx tsc`
+
+`pnpm run dev`
+
+Vous pourrez voir les dates s'afficher dans la console.
+
+---
+
 ## Attention
 
 - Enlever `now.setHours(8, 0, 0, 0);` sinon, ça sera la date du jour avec 08:00 sur 24 heures... !!! 
