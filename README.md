@@ -17,6 +17,8 @@ le vendredi de la 8ème semaine.
 Ensuite, la MAJ des dates est à nouveau gérée grâce au fichier `update-dates.json`, chaque vendredi de la 8ème semaine
 et une nouvelle date de MAJ est écrite dans ce même fichier.
 
+Tout ce dont quoi l'API a besoin pour se connecter à la CMS Collection, se trouve dans le fichier `.env`
+
 ---
 
 ## Update 
@@ -62,11 +64,13 @@ Utilisable pour les tests.
 
 ## Lancement
 
-- Mode BUILD
+- Install
 
 `pnpm install`
 
-`tsc`
+- Mode BUILD
+
+`node dist/server.js`
 
 - Mode DEV
 

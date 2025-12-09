@@ -10,7 +10,8 @@
     "resolveJsonModule": true,
     "types": ["node"],
     "forceConsistentCasingInFileNames": true,
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "rootDir": "./src"
   },
   "include": ["./**/*.ts"],
   "exclude": ["node_modules"]
