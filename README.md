@@ -172,7 +172,6 @@ app.use((req: Request, res: Response, next: NextType) => {
 ---
 
 ## Mes aides
-============
 ```
 // ---------------------------------
 // 2. PUBLISH SITE V1 (pages + CMS)
@@ -193,9 +192,7 @@ await fetch(
 ```
 `https://developers.webflow.com/data/docs/working-with-the-cms/manage-collections-and-items#defining-reference-and-multi-reference-fields`
 
-## API v2 PUBLISH
-=================
-
+### API v2 PUBLISH
 ```
 curl -X POST https://api.webflow.com/v2/sites/580e63e98c9a982ac9b8b741/publish \
      -H "Authorization: Bearer <token>" \
