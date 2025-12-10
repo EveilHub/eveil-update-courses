@@ -281,7 +281,7 @@ const fetchCMSData = async () => {
     Lancement de la fonction fetchCMSData() programmé pour
     chaque vendredi à 08:00 ("* 8 * * 5")
 */
-node_cron_1.default.schedule("*/5 * * * *", async () => {
+node_cron_1.default.schedule("* 8 * * 5", async () => {
     const today = new Date();
     console.log("------ Cron Job lancé ------");
     console.log(`Date et heure actuelles : ${today.toLocaleString()}`);

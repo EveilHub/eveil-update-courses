@@ -236,7 +236,7 @@ Choisir le service adapté pour héberger l'api.
 
 4) Ajouter un PORT, excepté ceux indiqué dans la doc officielle de Render dans le `.env`.
 
-5) Placer toutes les données dans la configuration de l'environnement de Render.
+5) Placer toutes les données dans la configuration de l'environnement de Render. + NODE_VERSION 25.2.1
 
 ---
 
