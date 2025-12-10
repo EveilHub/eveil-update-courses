@@ -4,7 +4,8 @@
   "description": "",
   "scripts": {
     "build": "tsc && cp src/utils/update-dates.json dist/utils/update-dates.json",
-    "dev": "ts-node src/server.ts"
+    "dev": "ts-node src/server.ts",
+    "start": "node dist/server.js"
   },
   "keywords": [],
   "author": "",
