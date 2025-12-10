@@ -1,14 +1,17 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const dotenv = require('dotenv');
-dotenv.config();
-const cron = require('node-cron');
-const express = require("express");
-const fs = require('fs').promises;
-const path = require("path");
+const dotenv_1 = __importDefault(require("dotenv"));
+const node_cron_1 = __importDefault(require("node-cron"));
+const express_1 = __importDefault(require("express"));
+const path_1 = __importDefault(require("path"));
+const promises_1 = __importDefault(require("fs/promises"));
 const dateUtils_1 = require("./utils/dateUtils");
-const UPDATE_FILE = path.join(__dirname, "./utils/update-dates.json");
-const app = express();
+dotenv_1.default.config();
+const UPDATE_FILE = path_1.default.join(__dirname, "./utils/update-dates.json");
+const app = (0, express_1.default)();
 const PORT = 3000;
 // Stock les data
 let informations = [];
@@ -19,7 +22,7 @@ let dateToUpdate = [];
 // Load depuis update-dates.json
 const loadUpdateDates = async () => {
     try {
-        const data = await fs.readFile(UPDATE_FILE, 'utf8');
+        const data = await promises_1.default.readFile(UPDATE_FILE, 'utf8');
         return JSON.parse(data);
     }
     catch (err) {
@@ -35,7 +38,7 @@ const loadUpdateDates = async () => {
 // Save in update-dates.json
 const saveUpdateDates = async () => {
     try {
-        await fs.writeFile(UPDATE_FILE, JSON.stringify(dateToUpdate, null, 2), 'utf8');
+        await promises_1.default.writeFile(UPDATE_FILE, JSON.stringify(dateToUpdate, null, 2), 'utf8');
         console.log("Update (friday) saved successfully!");
     }
     catch (err) {
@@ -68,13 +71,13 @@ const updateCMSItem = async (itemId, idValue, nouvelleDate) => {
         if (!response.ok) {
             const errorData = await response.json();
             console.error("Erreur PATCH Webflow :", errorData);
-            return;
+            throw new Error(`Update échoué: ${JSON.stringify(errorData)}`);
         }
-        console.log(`Item ${itemId} mis à jour avec succès:`, nouvelleDate);
+        console.log(`Cours ${itemId} mis à jour avec succès:`, nouvelleDate);
     }
     catch (err) {
         console.error("Erreur lors du PATCH :", err);
-        // return;
+        throw err;
     }
 };
 // -----------------------------
@@ -97,10 +100,7 @@ const handleIdValue = async (itemId, idValue, date, semaine, cours, formattedDat
         la génération des dates pour les 8 semaines.
     */
     const currentYear = new Date().getFullYear();
-    // test 5 nouvelle année
-    //const currentYear: number = 2026;
     let coursesForStartYear = (0, dateUtils_1.generateCourseDates)(currentYear);
-    // console.log("generation dates for coursesForStartYear", coursesForStartYear);
     /*
         Calcul des 2 dernières semaines de l'année en cours.
         La 1ère comprend Noël et la seconde comprend nouvel an.
@@ -110,9 +110,10 @@ const handleIdValue = async (itemId, idValue, date, semaine, cours, formattedDat
     const verifyHolidays = holidays.includes(nextDate);
     const aujourdHui = new Date();
     const moisActuel = aujourdHui.getMonth();
-    // test 6
-    // const moisActuel: number = 0;
-    // console.log("nextDate", nextDate);
+    if (moisActuel === 0) {
+        dateToUpdate = [];
+    }
+    ;
     if (idValue === 1) {
         dateToUpdate.push(update);
         await saveUpdateDates();
@@ -123,7 +124,6 @@ const handleIdValue = async (itemId, idValue, date, semaine, cours, formattedDat
     }
     ;
     if (moisActuel > 0) {
-        // console.log("Mois actuel > janvier", moisActuel);
         if (verifyHolidays) {
             // Génère "--/--/----" pour les jours restants pour les 8 semaines
             const currentIndex = informations.findIndex((info) => info.idValue === idValue);
@@ -182,7 +182,7 @@ const publishSite = async () => {
         if (!response.ok) {
             const errorData = await response.json();
             console.error("Erreur lors de la publication :", errorData);
-            return;
+            throw new Error("Publication échouée...");
         }
         const data = await response.json();
         console.log("Site publié avec succès !");
@@ -190,14 +190,14 @@ const publishSite = async () => {
     }
     catch (err) {
         console.error("Erreur lors de la publication :", err);
-        // return null;
+        throw err;
     }
 };
 // ---------------
 // FETCH CMS DATA
 // ---------------
 const fetchCMSData = async () => {
-    //let informations: InformationsType[] = [];
+    informations = [];
     try {
         const response = await fetch(`https://api.webflow.com/v2/collections/${process.env.COLLECTION_ID}/items?offset=0&limit=100`, {
             headers: {
@@ -230,11 +230,6 @@ const fetchCMSData = async () => {
     }
     // Fixe la date du jour
     const now = new Date();
-
-    // --- À retirer en version finale ---
-    now.setHours(8, 0, 0, 0);
-    // --- --------------------------- ---
-    
     // Fn() qui sert à formatter les dates pour ci-dessous
     const pad = (n) => String(n).padStart(2, "0");
     const day = pad(now.getDate());
@@ -244,26 +239,18 @@ const fetchCMSData = async () => {
     const minutes = pad(now.getMinutes());
     // Date du jour (vendredi) à comparer avec le vendredi de la semaine du nouvel an
     const formattedDate = `${day}/${month}/${year}`;
-    // test 1
-    //const formattedDate: string = "02/01/2026";
     // Date du jour (vendredi) à comparer avec la date du fichier update-dates.json
     const formattedDateHoursMin = `${formattedDate} ${hours}:${minutes}`;
-    // test 2
-    //const formattedDateHoursMin: string = "02/01/2026 08:00";
     // Date du fichier update-dates.json (vendredi)
     const lastFridayJsonRecorded = dateToUpdate.at(-1);
-    // test 3
-    //const lastFridayJsonRecorded: string | undefined = "02/01/2026 08:00";
     // Instancie le 1er vendredi de l'année qui tombe sur la semaine du nouvel an
     const currentYear = new Date().getFullYear();
     const lastWeeksPerYear = (0, dateUtils_1.deuxDernieresSemaines)(currentYear);
     const secondFridayHoliday = lastWeeksPerYear.derniereSemaine.vendredi;
-    // test 4
-    // const secondFridayHoliday: string = "02/01/2026";
     /*
         Si le dernier vendredi enregistré dans "update-dates.json" correspond
         à aujourd'hui, ou si le 1er vendredi de l'année correspond à la date
-        d'aujourd'hui => la fn() handleIdValue() est appelée.
+        d'aujourd'hui => handleIdValue() est appelée.
     */
     if (formattedDateHoursMin === lastFridayJsonRecorded || formattedDate === secondFridayHoliday) {
         try {
@@ -290,15 +277,14 @@ const fetchCMSData = async () => {
         return { updated: false, message: "Rien à mettre à jour aujourd'hui." };
     }
 };
-fetchCMSData();
 /*
     Lancement de la fonction fetchCMSData() programmé pour
     chaque vendredi à 08:00 ("* 8 * * 5")
 */
-cron.schedule("15 16 * * 2", async () => {
-    const now = new Date();
+node_cron_1.default.schedule("* 8 * * 5", async () => {
+    const today = new Date();
     console.log("------ Cron Job lancé ------");
-    console.log(`Date et heure actuelles : ${now.toLocaleString()}`);
+    console.log(`Date et heure actuelles : ${today.toLocaleString()}`);
     try {
         await fetchCMSData();
         console.log("fetchCMSData() terminé avec succès !");

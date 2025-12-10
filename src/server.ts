@@ -1,11 +1,24 @@
-import type { DataType, ItemsType, InformationsType, EndDatesYearsTypes, FetchCMSDataResult, WebflowPublishResponse } from "./types/types";
-const dotenv = require('dotenv');
+import type { 
+    DataType, 
+    ItemsType, 
+    InformationsType, 
+    EndDatesYearsTypes, 
+    FetchCMSDataResult,
+    WebflowPublishResponse 
+} from "./types/types";
+import dotenv from 'dotenv';
+import cron from 'node-cron';
+import express from 'express';
+import path from 'path';
+import fs from 'fs/promises';
+import { 
+    parseDate,
+    functionDate,
+    formatUpdateFriday,
+    deuxDernieresSemaines,
+    generateCourseDates 
+} from "./utils/dateUtils";
 dotenv.config();
-const cron = require('node-cron');
-const express = require("express");
-const fs = require('fs').promises;
-const path = require("path");
-import { parseDate, functionDate, formatUpdateFriday, deuxDernieresSemaines, generateCourseDates } from "./utils/dateUtils";
 
 const UPDATE_FILE = path.join(__dirname, "./utils/update-dates.json");
 
@@ -113,9 +126,7 @@ const handleIdValue = async (
         la génération des dates pour les 8 semaines.
     */
     const currentYear: number = new Date().getFullYear();
-    
     let coursesForStartYear: {day: string, date: string}[] = generateCourseDates(currentYear);
-    // console.log("generation dates for coursesForStartYear", coursesForStartYear);
 
     /*
         Calcul des 2 dernières semaines de l'année en cours.
@@ -128,8 +139,12 @@ const handleIdValue = async (
     const aujourdHui: Date = new Date();
     const moisActuel: number = aujourdHui.getMonth();
 
+    if (moisActuel === 0) {
+        dateToUpdate = [];
+    };
+
     if (idValue === 1) {
-        moisActuel === 0 ? dateToUpdate = [] : dateToUpdate.push(update);
+        dateToUpdate.push(update);
         await saveUpdateDates();
         console.log("Update programmer pour dans 8 semaines !");
     } else {
@@ -204,7 +219,6 @@ const publishSite = async (): Promise<WebflowPublishResponse> => {
             throw new Error("Publication échouée...");
         }
         const data: WebflowPublishResponse = await response.json();
-        console.log(data.publishedBy);
         console.log("Site publié avec succès !");
         return data;
     } catch (err) {
@@ -257,11 +271,6 @@ const fetchCMSData = async (): Promise<FetchCMSDataResult> => {
 
     // Fixe la date du jour
     const now: Date = new Date();
-
-    // --- À retirer en version finale ---
-    // Simule 08:00
-    now.setHours(8, 0, 0, 0);
-    // --- --------------------------- ---
 
     // Fn() qui sert à formatter les dates pour ci-dessous
     const pad = (n: number) => String(n).padStart(2, "0");
@@ -321,7 +330,6 @@ const fetchCMSData = async (): Promise<FetchCMSDataResult> => {
         return { updated: false, message: "Rien à mettre à jour aujourd'hui." };
     }
 };
-fetchCMSData();
 
 /*
     Lancement de la fonction fetchCMSData() programmé pour 
