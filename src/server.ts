@@ -8,7 +8,7 @@ import type {
 } from "./types/types";
 import dotenv from 'dotenv';
 import cron from 'node-cron';
-import express from 'express';
+import express, { Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs/promises';
 import { 
@@ -346,6 +346,10 @@ cron.schedule("*/5 * * * *", async (): Promise<void> => {
         console.error("Erreur lors de fetchCMSData() :", err);
     }
     console.log("---------------------------");
+});
+
+app.get("/health", (req: Request, res: Response) => {
+    res.status(200).json({ status: "API is running !" });
 });
 
 app.listen(PORT, () => {
