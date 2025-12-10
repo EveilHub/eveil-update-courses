@@ -12,7 +12,7 @@ const dateUtils_1 = require("./utils/dateUtils");
 dotenv_1.default.config();
 const UPDATE_FILE = path_1.default.join(__dirname, "./utils/update-dates.json");
 const app = (0, express_1.default)();
-const PORT = 3000;
+const PORT = process.env.PORT || 4000;
 // Stock les data
 let informations = [];
 let dateToUpdate = [];
