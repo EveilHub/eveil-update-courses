@@ -235,17 +235,14 @@ curl -X POST https://api.webflow.com/v2/sites/580e63e98c9a982ac9b8b741/publish \
 
 Nb de jours après update:
 - update du friday nouvel an (1ère semaine) - done !!!
-- update du friday normal (1ère semaine) - done !!!
+- update du friday normal - done !!!
 - jours cms collection - done !!!
-
-- erreur
+- gestion des erreurs avec les fn() async - done !!!
 
 `update-dates.json` :
 - vendredi suivant la génération de date - done !!!
 - date suivante placée avant - done !!!
 - test avec nouvelle année (générer de nouvelles dates) - done !!!
-- test du - ??? !!!
-- 
 
 
 ## Console.log() & update-dates.json
@@ -259,10 +256,11 @@ Mettre la date dans le fichier `update-dates.json`.
 // Simule 08:00
 // now.setHours(8, 0, 0, 0);
 // --- --------------------------- ---
-```
 
 console.log("*** lastFridayJsonRecorded ***", lastFridayJsonRecorded);
+
 console.log("*** formattedDateHoursMin ***", formattedDateHoursMin);
+
 console.log("*** formattedDate ***", formattedDate);
 
 // test 1
@@ -278,11 +276,12 @@ console.log("*** formattedDate ***", formattedDate);
 // const secondFridayHoliday: string = "02/01/2026";
 
 // fetchCMSData();
-
+```
 ---
 
 ### fn => handleIdValue()
 
+```
 const firstLundiVacances: string = lastWeeksPerYear.avantDerniereSemaine.lundi;
 const firstMardiVacances: string = lastWeeksPerYear.avantDerniereSemaine.mardi;
 const firstMercrediVacances: string = lastWeeksPerYear.avantDerniereSemaine.mercredi;
@@ -307,3 +306,4 @@ console.log("++ Dates 2er lundi (vacances)", secondLundiVacances);
 // const moisActuel: number = 0;
 
 // console.log("nextDate", nextDate);
+```
