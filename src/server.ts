@@ -225,7 +225,7 @@ const publishSite = async (): Promise<InformationsType | void> => {
 // FETCH CMS DATA
 // ---------------
 const fetchCMSData = async (): Promise<FetchCMSDataResult> => {
-    //let informations: InformationsType[] = [];
+    informations = [];
 
     try {
         const response = await fetch(
