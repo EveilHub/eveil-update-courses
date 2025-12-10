@@ -230,9 +230,11 @@ const fetchCMSData = async () => {
     }
     // Fixe la date du jour
     const now = new Date();
+
     // --- À retirer en version finale ---
     now.setHours(8, 0, 0, 0);
     // --- --------------------------- ---
+    
     // Fn() qui sert à formatter les dates pour ci-dessous
     const pad = (n) => String(n).padStart(2, "0");
     const day = pad(now.getDate());

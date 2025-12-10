@@ -2,12 +2,6 @@ export type DataType = {
     items: ItemsType[];
 };
 
-
-export type FetchCMSDataResult = {
-    updated: boolean;
-    message: string; 
-};
-
 export type ItemsType = {
     id: string;
     cmsLocaleId: string | null;
@@ -59,4 +53,21 @@ export type EndDatesYearsTypes = {
         jeudi: string;
         vendredi: string;
     }
+};
+
+export type WebflowPublishedBy = {
+    name: string;
+    id: string;
+};
+
+export type WebflowPublishResponse = {
+    site: string;
+    publishTime: string;
+    domains: string[];
+    publishedBy: WebflowPublishedBy;
+};
+
+export type FetchCMSDataResult = {
+    updated: boolean;
+    message: string; 
 };

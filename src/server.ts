@@ -1,4 +1,4 @@
-import type { DataType, ItemsType, InformationsType, EndDatesYearsTypes, FetchCMSDataResult } from "./types/types";
+import type { DataType, ItemsType, InformationsType, EndDatesYearsTypes, FetchCMSDataResult, WebflowPublishResponse } from "./types/types";
 const dotenv = require('dotenv');
 dotenv.config();
 const cron = require('node-cron');
@@ -178,18 +178,6 @@ const handleIdValue = async (
     };
 };
 
-export type WebflowPublishedBy = {
-    name: string;
-    id: string;
-};
-
-export type WebflowPublishResponse = {
-    site: string;
-    publishTime: string;
-    domains: string[];
-    publishedBy: WebflowPublishedBy;
-};
-
 // -----------------------------
 // PUBLICATION SUR SITE WEBFLOW
 // -----------------------------
@@ -270,6 +258,11 @@ const fetchCMSData = async (): Promise<FetchCMSDataResult> => {
     // Fixe la date du jour
     const now: Date = new Date();
 
+    // --- À retirer en version finale ---
+    // Simule 08:00
+    now.setHours(8, 0, 0, 0);
+    // --- --------------------------- ---
+
     // Fn() qui sert à formatter les dates pour ci-dessous
     const pad = (n: number) => String(n).padStart(2, "0");
     const day = pad(now.getDate());
@@ -328,6 +321,7 @@ const fetchCMSData = async (): Promise<FetchCMSDataResult> => {
         return { updated: false, message: "Rien à mettre à jour aujourd'hui." };
     }
 };
+fetchCMSData();
 
 /*
     Lancement de la fonction fetchCMSData() programmé pour 
