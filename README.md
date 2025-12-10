@@ -46,7 +46,7 @@ Durant les 2 dernières semaines de l'année, qui sont des semaines de vacances,
 
 ---
 
-## En cas de problèmes
+## En cas de problèmes !!!
 
 // --- À retirer en version finale ---
 Décommenter
@@ -219,15 +219,24 @@ curl -X POST https://api.webflow.com/v2/sites/580e63e98c9a982ac9b8b741/publish \
 
 `Render.com` est le meilleur choix gratuit et stable.
 
-✔ la configuration Render "clé en main"
+Choisir le service adapté pour héberger l'api.
 
-✔ un fichier render.yaml (déploiement automatique)
+1) Importer le repo depuis GitHub.
 
-✔ un fichier spécial cron-runner.js
+2) Ajouter dans `package.json` :
+```
+  "engines": {
+    "node": "25.2.x"
+  }
+```
 
-✔ un Dockerfile (pour Fly.io)
+3) Créer `.nvmrc` et `.node-version` et écrire la version de node dedans : `25.2.1`
 
-✔ une version optimisée pour hébergement gratuit (sans risques de crash)
+(Connaître la version de node : `node -v`)
+
+4) Ajouter un PORT, excepté ceux indiqué dans la doc officielle de Render dans le `.env`.
+
+5) Placer toutes les données dans la configuration de l'environnement de Render.
 
 ---
 
@@ -283,12 +292,19 @@ console.log("*** formattedDate ***", formattedDate);
 
 ```
 const firstLundiVacances: string = lastWeeksPerYear.avantDerniereSemaine.lundi;
+
 const firstMardiVacances: string = lastWeeksPerYear.avantDerniereSemaine.mardi;
+
 const firstMercrediVacances: string = lastWeeksPerYear.avantDerniereSemaine.mercredi;
+
 const firstJeudiVacances: string = lastWeeksPerYear.avantDerniereSemaine.jeudi;
+
 const secondLundiVacances: string = lastWeeksPerYear.derniereSemaine.lundi;
+
 const secondMardiVacances: string = lastWeeksPerYear.derniereSemaine.mardi;
+
 const secondMercrediVacances: string = lastWeeksPerYear.derniereSemaine.mercredi;
+
 const secondJeudiVacances: string = lastWeeksPerYear.derniereSemaine.jeudi;
 
 const holidays: string[] = [

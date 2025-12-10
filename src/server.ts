@@ -335,7 +335,7 @@ const fetchCMSData = async (): Promise<FetchCMSDataResult> => {
     Lancement de la fonction fetchCMSData() programmé pour 
     chaque vendredi à 08:00 ("* 8 * * 5")
 */
-cron.schedule("* 8 * * 5", async (): Promise<void> => {
+cron.schedule("*/5 * * * *", async (): Promise<void> => {
     const today: Date = new Date();
     console.log("------ Cron Job lancé ------");
     console.log(`Date et heure actuelles : ${today.toLocaleString()}`);
