@@ -248,14 +248,41 @@ Nb de jours après update:
 - 
 
 
-## Console.log()
+## Console.log() & update-dates.json
 
-fn => fetchCMSData()
+Mettre la date dans le fichier `update-dates.json`.
+
+### fn => fetchCMSData()
+
+```
+// --- À retirer en version finale ---
+// Simule 08:00
+// now.setHours(8, 0, 0, 0);
+// --- --------------------------- ---
+```
+
 console.log("*** lastFridayJsonRecorded ***", lastFridayJsonRecorded);
 console.log("*** formattedDateHoursMin ***", formattedDateHoursMin);
 console.log("*** formattedDate ***", formattedDate);
 
-fn => handleIdValue()
+// test 1
+//const formattedDate: string = "02/01/2026";
+
+// test 2
+//const formattedDateHoursMin: string = "02/01/2026 08:00";
+
+// test 3
+//const lastFridayJsonRecorded: string | undefined = "02/01/2026 08:00";
+
+// test 4
+// const secondFridayHoliday: string = "02/01/2026";
+
+// fetchCMSData();
+
+---
+
+### fn => handleIdValue()
+
 const firstLundiVacances: string = lastWeeksPerYear.avantDerniereSemaine.lundi;
 const firstMardiVacances: string = lastWeeksPerYear.avantDerniereSemaine.mardi;
 const firstMercrediVacances: string = lastWeeksPerYear.avantDerniereSemaine.mercredi;
@@ -272,3 +299,11 @@ const holidays: string[] = [
 
 console.log("+ Dates 1er lundi (vacances)", firstLundiVacances);
 console.log("++ Dates 2er lundi (vacances)", secondLundiVacances);
+
+// test 5 nouvelle année
+//const currentYear: number = 2026;
+
+// test 6
+// const moisActuel: number = 0;
+
+// console.log("nextDate", nextDate);
