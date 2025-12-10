@@ -23,7 +23,7 @@ dotenv.config();
 const UPDATE_FILE = path.join(__dirname, "./utils/update-dates.json");
 
 const app = express();
-const PORT: string | number = process.env.PORT || 4000;
+const PORT: string | number = process.env.PORT || 3000;
 
 // Stock les data
 let informations: InformationsType[] = [];
