@@ -336,7 +336,7 @@ const fetchCMSData = async (): Promise<FetchCMSDataResult> => {
     Lancement de la fonction fetchCMSData() programmé pour 
     chaque vendredi à 08:00 ("0 8 * * 5")
 */
-cron.schedule("0 10 * * 1", async (): Promise<void> => {
+cron.schedule("15 9 * * 1", async (): Promise<void> => {
     const today: Date = new Date();
     //console.log(`Date et heure actuelles : ${today.toLocaleString()}`);
     const dateUTC = today.toLocaleDateString("fr-FR", { 
@@ -358,6 +358,7 @@ cron.schedule("0 10 * * 1", async (): Promise<void> => {
 );
 
 app.get("/health", (req: Request, res: Response) => {
+    res.send("Hello !");
     res.status(200).json({ status: "API is running !" });
 });
 

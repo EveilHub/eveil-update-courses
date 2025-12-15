@@ -281,7 +281,7 @@ const fetchCMSData = async () => {
     Lancement de la fonction fetchCMSData() programmé pour
     chaque vendredi à 08:00 ("0 8 * * 5")
 */
-node_cron_1.default.schedule("0 10 * * 1", async () => {
+node_cron_1.default.schedule("15 9 * * 1", async () => {
     const today = new Date();
     //console.log(`Date et heure actuelles : ${today.toLocaleString()}`);
     const dateUTC = today.toLocaleDateString("fr-FR", {
@@ -301,6 +301,7 @@ node_cron_1.default.schedule("0 10 * * 1", async () => {
     timezone: "UTC",
 });
 app.get("/health", (req, res) => {
+    res.send("Hello !");
     res.status(200).json({ status: "API is running !" });
 });
 app.listen(PORT, () => {
