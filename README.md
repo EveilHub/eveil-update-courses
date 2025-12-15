@@ -1,9 +1,8 @@
 # Eveil API
 
-L'API récupère les dates de la CMS Collection et les renvois à la CMS Collection, une fois que les dates sont update.
+L'API récupère les dates de la CMS Collection et les renvois à la CMS Collection, une fois que les dates sont updated.
 
-Les dates sont updated chaque semaine 8, le vendredi à 08:00, grâce au fichier `update-dates.json` dans lequel sont 
-écrits les dates de MAJ (Mise à Jour).
+Les dates sont updated à la 8ème semaine de cours, le vendredi à 08:00, grâce à Upstash.
 
 - Update des dates en début d'année
 
@@ -18,6 +17,8 @@ Ensuite, la MAJ des dates est à nouveau gérée grâce au fichier `update-dates
 et une nouvelle date de MAJ est écrite dans ce même fichier.
 
 Tout ce dont quoi l'API a besoin pour se connecter à la CMS Collection, se trouve dans le fichier `.env`
+
+Les updates s'effectuent à partir d'un timezone UTC.
 
 ---
 
@@ -217,6 +218,8 @@ curl -X POST https://api.webflow.com/v2/sites/43985798375893/publish \
 
 ## Hébergement
 
+### Render
+
 `Render.com` est le meilleur choix gratuit et stable.
 
 Choisir le service adapté pour héberger l'api.
@@ -241,11 +244,14 @@ et ajouter `NODE_VERSION=25.2.1`
 
 6) Fuseau Horaire de Render.com: UTF GMT+1 (donc -1 dans notre code)
 
-Upstash
+---
+
+### Upstash
 
 `Upstash.com`
 
-Les dates sont stocké sur ce server gratuit. 
+Il n'est pas possible de lire et d'écrire dans un fichier json car les données s'efface sur le fichier à chaque fois que le container reboot.
+Pour rendre les données persistantes, j'ai opté pour Upstash. Les dates sont ainsi stockées dessus gratuitement. 
 
 ---
 
