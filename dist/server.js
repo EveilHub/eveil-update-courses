@@ -301,7 +301,6 @@ node_cron_1.default.schedule("15 9 * * 1", async () => {
     timezone: "UTC",
 });
 app.get("/health", (req, res) => {
-    res.send("Hello !");
     res.status(200).json({ status: "API is running !" });
 });
 app.listen(PORT, () => {

@@ -358,7 +358,6 @@ cron.schedule("15 9 * * 1", async (): Promise<void> => {
 );
 
 app.get("/health", (req: Request, res: Response) => {
-    res.send("Hello !");
     res.status(200).json({ status: "API is running !" });
 });
 
