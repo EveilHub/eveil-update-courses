@@ -232,11 +232,11 @@ const fetchCMSData = async () => {
     const now = new Date();
     // Fn() qui sert à formatter les dates pour ci-dessous
     const pad = (n) => String(n).padStart(2, "0");
-    const day = pad(now.getDate());
-    const month = pad(now.getMonth() + 1);
-    const year = now.getFullYear();
-    const hours = pad(now.getHours());
-    const minutes = pad(now.getMinutes());
+    const day = pad(now.getUTCDate());
+    const month = pad(now.getUTCMonth() + 1);
+    const year = now.getUTCFullYear();
+    const hours = pad(now.getUTCHours());
+    const minutes = pad(now.getUTCMinutes());
     // Date du jour (vendredi) à comparer avec le vendredi de la semaine du nouvel an
     const formattedDate = `${day}/${month}/${year}`;
     // Date du jour (vendredi) à comparer avec la date du fichier update-dates.json
@@ -279,12 +279,16 @@ const fetchCMSData = async () => {
 };
 /*
     Lancement de la fonction fetchCMSData() programmé pour
-    chaque vendredi à 08:00 ("* 8 * * 5")
+    chaque vendredi à 08:00 ("0 8 * * 5")
 */
-node_cron_1.default.schedule("* 8 * * 5", async () => {
+node_cron_1.default.schedule("0 8 * * 5", async () => {
     const today = new Date();
+    //console.log(`Date et heure actuelles : ${today.toLocaleString()}`);
+    const dateUTC = today.toLocaleDateString("fr-FR", {
+        timeZone: "UTC",
+    });
     console.log("------ Cron Job lancé ------");
-    console.log(`Date et heure actuelles : ${today.toLocaleString()}`);
+    console.log(`Date UTC : ${dateUTC}`);
     try {
         await fetchCMSData();
         console.log("fetchCMSData() terminé avec succès !");
@@ -293,6 +297,8 @@ node_cron_1.default.schedule("* 8 * * 5", async () => {
         console.error("Erreur lors de fetchCMSData() :", err);
     }
     console.log("---------------------------");
+}, {
+    timezone: "UTC",
 });
 app.get("/health", (req, res) => {
     res.status(200).json({ status: "API is running !" });

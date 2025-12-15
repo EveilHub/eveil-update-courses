@@ -115,7 +115,7 @@ Vous pourrez voir les dates s'afficher dans la console.
 - Enlever `now.setHours(8, 0, 0, 0);` sinon, ça sera la date du jour avec 08:00 sur 24 heures... !!! 
 Utilisable pour les tests.
 
-- Vérifier si `cron.schedule("* 8 * * 5", async () => {})` pour que ça se déclenche tous les vendredi à 8h00.
+- Vérifier si `cron.schedule("0 8 * * 5", async () => {})` pour que ça se déclenche tous les vendredi à 8h00.
 
 - Pour 8 semaines `idValueToUpdate <= 72` : `for (let idValueToUpdate = 1; idValueToUpdate <= 72; idValueToUpdate++)`
 
@@ -201,13 +201,13 @@ await fetch(
 
 ### API v2 PUBLISH
 ```
-curl -X POST https://api.webflow.com/v2/sites/580e63e98c9a982ac9b8b741/publish \
+curl -X POST https://api.webflow.com/v2/sites/43985798375893/publish \
      -H "Authorization: Bearer <token>" \
      -H "Content-Type: application/json" \
      -d '{
   "customDomains": [
-    "660c6449dd97ebc7346ac629",
-    "660c6449dd97ebc7346ac62f"
+    "743895789435743",
+    "345438574387584"
   ],
   "publishToWebflowSubdomain": false
 }'
@@ -236,7 +236,8 @@ Choisir le service adapté pour héberger l'api.
 
 4) Ajouter un PORT, excepté ceux indiqué dans la doc officielle de Render dans le `.env`.
 
-5) Placer toutes les données dans la configuration de l'environnement de Render. + NODE_VERSION 25.2.1
+5) Placer toutes les données dans la configuration de l'environnement de Render (copier-coller)
+et ajouter `NODE_VERSION=25.2.1`
 
 ---
 
@@ -323,3 +324,13 @@ console.log("++ Dates 2er lundi (vacances)", secondLundiVacances);
 
 // console.log("nextDate", nextDate);
 ```
+
+Fuseau Horaire UTF GMT+1
+
+// timezone: "UTC - Europe/Paris"
+
+// const day = pad(now.getDate());
+    // const month = pad(now.getMonth() + 1);
+    // const year = now.getFullYear();
+    // const hours = pad(now.getHours());
+    // const minutes = pad(now.getMinutes());
