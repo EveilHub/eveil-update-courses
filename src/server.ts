@@ -8,9 +8,8 @@ import type {
 } from "./types/types";
 import dotenv from 'dotenv';
 import cron from 'node-cron';
+import { Redis } from '@upstash/redis';
 import express, { Request, Response } from 'express';
-import path from 'path';
-import fs from 'fs/promises';
 import { 
     parseDate,
     functionDate,
@@ -20,47 +19,57 @@ import {
 } from "./utils/dateUtils";
 dotenv.config();
 
-const UPDATE_FILE = path.join(__dirname, "./utils/update-dates.json");
-
 const app = express();
 const PORT: string | number = process.env.PORT || 3000;
 
 // Stock les data
 let informations: InformationsType[] = [];
-let dateToUpdate: string[] = [];
 
-// --------------------------------------------------
-// Lecture & Ecriture dans ./utils/update-dates.json
-// --------------------------------------------------
-// Load depuis update-dates.json
-const loadUpdateDates = async (): Promise<string[]> => {
-    try {
-        const data = await fs.readFile(UPDATE_FILE, 'utf8');
-        return JSON.parse(data) as string[];
-    } catch (err: any) {
-        if (err.code === "ENOENT") {
-            console.warn("Fichier non trouvé, création d'un nouveau.");
-        } else {
-            console.error("Erreur lors du chargement du fichier :", err);
+const redis = new Redis({
+    url: process.env.UPSTASH_REDIS_REST_URL!,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
+
+// ----------------------------------------
+// Charger - Ajouter les dates depuis Redis
+// ----------------------------------------
+const addDate = async (date: string) => {
+    const raw = await redis.get('update_dates');
+    // Sécurité maximale
+    if (typeof raw !== 'string') {
+        const dates: Record<string, string> = { "0": date };
+        await redis.set('update_dates', JSON.stringify(dates));
+        return;
+    }
+    const dates = JSON.parse(raw) as Record<string, string>;
+    if (Object.values(dates).includes(date)) return;
+    const nextIndex = Object.keys(dates).length;
+    dates[nextIndex] = date;
+    await redis.set('update_dates', JSON.stringify(dates));
+};
+
+const getLastDate = async (): Promise<string | null> => {
+    const raw = await redis.get("update_dates");
+
+    if (!raw) return null;
+
+    // Si raw est déjà un objet
+    if (typeof raw === "object" && raw !== null) {
+        return (raw as Record<string, string>)["0"] ?? null;
+    }
+
+    // Si raw est une string JSON
+    if (typeof raw === "string") {
+        try {
+            const dates = JSON.parse(raw) as Record<string, string>;
+            return dates["0"] ?? null;
+        } catch (err) {
+            console.error("Erreur JSON.parse:", err, raw);
+            return null;
         }
-        return [];
     }
+    return null;
 };
-
-// Save in update-dates.json
-const saveUpdateDates = async (): Promise<void> => {
-    try {
-        await fs.writeFile(UPDATE_FILE, JSON.stringify(dateToUpdate, null, 2), 'utf8');
-        console.log("Update (friday) saved successfully!");
-    } catch (err) {
-        console.error("Erreur lors de la sauvegarde du vendredi :", err);
-    }
-};
-
-// Load data depuis update-dates.json au démarrage
-(async () => {
-    dateToUpdate = await loadUpdateDates();
-})();
 
 // -----------
 // UPDATE CMS
@@ -140,13 +149,11 @@ const handleIdValue = async (
     const moisActuel: number = aujourdHui.getMonth();
 
     if (moisActuel === 0) {
-        dateToUpdate = [];
+        await redis.set("update_dates", JSON.stringify({}));
     };
 
     if (idValue === 1) {
-        dateToUpdate.push(update);
-        await saveUpdateDates();
-        console.log("Update programmer pour dans 8 semaines !");
+        await addDate(update);
     } else {
         console.log("No item to update !");
     };
@@ -288,7 +295,8 @@ const fetchCMSData = async (): Promise<FetchCMSDataResult> => {
     const formattedDateHoursMin = `${formattedDate} ${hours}:${minutes}`;
 
     // Date du fichier update-dates.json (vendredi)
-    const lastFridayJsonRecorded: string | undefined = dateToUpdate.at(-1);
+    const lastFridayJsonRecorded: string | null = await getLastDate();
+    console.log("lastFridayJsonRecorded", lastFridayJsonRecorded);
 
     // Instancie le 1er vendredi de l'année qui tombe sur la semaine du nouvel an
     const currentYear: number = new Date().getFullYear();
@@ -334,9 +342,9 @@ const fetchCMSData = async (): Promise<FetchCMSDataResult> => {
 
 /*
     Lancement de la fonction fetchCMSData() programmé pour 
-    chaque vendredi à 08:00 ("0 8 * * 5")
+    chaque vendredi à 08:00 ("0 7 * * 5")
 */
-cron.schedule("15 9 * * 1", async (): Promise<void> => {
+cron.schedule("15 14 * * 1", async (): Promise<void> => {
     const today: Date = new Date();
     //console.log(`Date et heure actuelles : ${today.toLocaleString()}`);
     const dateUTC = today.toLocaleDateString("fr-FR", { 

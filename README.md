@@ -239,6 +239,14 @@ Choisir le service adapté pour héberger l'api.
 5) Placer toutes les données dans la configuration de l'environnement de Render (copier-coller)
 et ajouter `NODE_VERSION=25.2.1`
 
+6) Fuseau Horaire de Render.com: UTF GMT+1 (donc -1 dans notre code)
+
+Upstash
+
+`Upstash.com`
+
+Les dates sont stocké sur ce server gratuit. 
+
 ---
 
 ## TEST
@@ -324,13 +332,3 @@ console.log("++ Dates 2er lundi (vacances)", secondLundiVacances);
 
 // console.log("nextDate", nextDate);
 ```
-
-Fuseau Horaire UTF GMT+1
-
-// timezone: "UTC - Europe/Paris"
-
-// const day = pad(now.getDate());
-    // const month = pad(now.getMonth() + 1);
-    // const year = now.getFullYear();
-    // const hours = pad(now.getHours());
-    // const minutes = pad(now.getMinutes());
