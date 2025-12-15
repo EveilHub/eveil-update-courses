@@ -281,7 +281,7 @@ const fetchCMSData = async () => {
     Lancement de la fonction fetchCMSData() programmé pour
     chaque vendredi à 08:00 ("0 8 * * 5")
 */
-node_cron_1.default.schedule("0 8 * * 5", async () => {
+node_cron_1.default.schedule("0 10 * * 1", async () => {
     const today = new Date();
     //console.log(`Date et heure actuelles : ${today.toLocaleString()}`);
     const dateUTC = today.toLocaleDateString("fr-FR", {
