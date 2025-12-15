@@ -353,7 +353,7 @@ const fetchCMSData = async (): Promise<FetchCMSDataResult> => {
     Lancement de la fonction fetchCMSData() programmé pour 
     chaque vendredi à 08:00 ("0 7 * * 5")
 */
-cron.schedule("55 15 * * 2", async (): Promise<void> => {
+cron.schedule("0 7 * * 2", async (): Promise<void> => {
     const today: Date = new Date();
     //console.log(`Date et heure actuelles : ${today.toLocaleString()}`);
     const dateUTC = today.toLocaleDateString("fr-FR", { 
