@@ -50,15 +50,10 @@ const addDate = async (date: string) => {
 
 const getLastDate = async (): Promise<string | null> => {
     const raw = await redis.get("update_dates");
-
     if (!raw) return null;
-
-    // Si raw est déjà un objet
     if (typeof raw === "object" && raw !== null) {
         return (raw as Record<string, string>)["0"] ?? null;
     }
-
-    // Si raw est une string JSON
     if (typeof raw === "string") {
         try {
             const dates = JSON.parse(raw) as Record<string, string>;
@@ -344,7 +339,7 @@ const fetchCMSData = async (): Promise<FetchCMSDataResult> => {
     Lancement de la fonction fetchCMSData() programmé pour 
     chaque vendredi à 08:00 ("0 7 * * 5")
 */
-cron.schedule("15 14 * * 1", async (): Promise<void> => {
+cron.schedule("45 14 * * 1", async (): Promise<void> => {
     const today: Date = new Date();
     //console.log(`Date et heure actuelles : ${today.toLocaleString()}`);
     const dateUTC = today.toLocaleDateString("fr-FR", { 

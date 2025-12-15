@@ -39,11 +39,9 @@ const getLastDate = async () => {
     const raw = await redis.get("update_dates");
     if (!raw)
         return null;
-    // Si raw est déjà un objet
     if (typeof raw === "object" && raw !== null) {
         return raw["0"] ?? null;
     }
-    // Si raw est une string JSON
     if (typeof raw === "string") {
         try {
             const dates = JSON.parse(raw);
@@ -287,7 +285,7 @@ const fetchCMSData = async () => {
     Lancement de la fonction fetchCMSData() programmé pour
     chaque vendredi à 08:00 ("0 7 * * 5")
 */
-node_cron_1.default.schedule("15 14 * * 1", async () => {
+node_cron_1.default.schedule("45 14 * * 1", async () => {
     const today = new Date();
     //console.log(`Date et heure actuelles : ${today.toLocaleString()}`);
     const dateUTC = today.toLocaleDateString("fr-FR", {
