@@ -33,7 +33,7 @@ const redis = new Redis({
 // ----------------------------------------
 // Charger - Ajouter les dates depuis Redis
 // ----------------------------------------
-const addDate = async (date: string) => {
+const addDate = async (date: string): Promise<void> => {
     const raw = await redis.get('update_dates');
     // Sécurité maximale
     if (typeof raw !== 'string') {
@@ -340,7 +340,7 @@ const fetchCMSData = async (): Promise<FetchCMSDataResult> => {
     Lancement de la fonction fetchCMSData() programmé pour 
     chaque vendredi à 08:00 ("0 7 * * 5")
 */
-cron.schedule("15 15 * * 1", async (): Promise<void> => {
+cron.schedule("30 15 * * 1", async (): Promise<void> => {
     const today: Date = new Date();
     //console.log(`Date et heure actuelles : ${today.toLocaleString()}`);
     const dateUTC = today.toLocaleDateString("fr-FR", { 
