@@ -113,8 +113,9 @@ const handleIdValue = async (itemId, idValue, date, semaine, cours, formattedDat
     const lastWeeksPerYear = (0, dateUtils_1.deuxDernieresSemaines)(currentYear);
     const holidays = Object.values(lastWeeksPerYear).flatMap((week) => Object.values(week));
     const verifyHolidays = holidays.includes(nextDate);
-    const aujourdHui = new Date();
-    const moisActuel = aujourdHui.getMonth();
+    //const aujourdHui: Date = new Date();
+    //const moisActuel: number = aujourdHui.getMonth();
+    const moisActuel = 0;
     if (moisActuel === 0) {
         await redis.set("update_dates", JSON.stringify({}));
     }

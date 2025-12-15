@@ -140,8 +140,9 @@ const handleIdValue = async (
     const holidays = Object.values(lastWeeksPerYear).flatMap((week) => Object.values(week));
     const verifyHolidays: boolean = holidays.includes(nextDate);
     
-    const aujourdHui: Date = new Date();
-    const moisActuel: number = aujourdHui.getMonth();
+    //const aujourdHui: Date = new Date();
+    //const moisActuel: number = aujourdHui.getMonth();
+    const moisActuel: number = 0;
 
     if (moisActuel === 0) {
         await redis.set("update_dates", JSON.stringify({}));
