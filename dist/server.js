@@ -21,17 +21,15 @@ const redis = new redis_1.Redis({
 // ----------------------------------------
 const addDate = async (date) => {
     const raw = await redis.get('update_dates');
-    // Sécurité maximale
     if (typeof raw !== 'string') {
         const dates = { "0": date };
         await redis.set('update_dates', JSON.stringify(dates));
         return;
     }
     const dates = JSON.parse(raw);
-    if (Object.values(dates).includes(date))
+    if (dates["0"] === date)
         return;
-    const nextIndex = Object.keys(dates).length;
-    dates[nextIndex] = date;
+    dates["0"] = date;
     await redis.set('update_dates', JSON.stringify(dates));
 };
 const getLastDate = async () => {
@@ -112,9 +110,8 @@ const handleIdValue = async (itemId, idValue, date, semaine, cours, formattedDat
     const lastWeeksPerYear = (0, dateUtils_1.deuxDernieresSemaines)(currentYear);
     const holidays = Object.values(lastWeeksPerYear).flatMap((week) => Object.values(week));
     const verifyHolidays = holidays.includes(nextDate);
-    //const aujourdHui: Date = new Date();
-    //const moisActuel: number = aujourdHui.getMonth();
-    const moisActuel = 0;
+    const aujourdHui = new Date();
+    const moisActuel = aujourdHui.getMonth();
     if ((moisActuel === 0) && (idValue === 1)) {
         await redis.set("update_dates", JSON.stringify({}));
         await addDate(update);
@@ -125,14 +122,7 @@ const handleIdValue = async (itemId, idValue, date, semaine, cours, formattedDat
     else {
         console.log("No item to update !");
     }
-    // if (moisActuel === 0) {
-    //     await redis.set("update_dates", JSON.stringify({}));
-    // };
-    // if (idValue === 1) {
-    //     await addDate(update);
-    // } else {
-    //     console.log("No item to update !");
-    // };
+    ;
     if (moisActuel > 0) {
         if (verifyHolidays) {
             // Génère "--/--/----" pour les jours restants pour les 8 semaines
@@ -248,17 +238,15 @@ const fetchCMSData = async () => {
     const hours = pad(now.getUTCHours());
     const minutes = pad(now.getUTCMinutes());
     // Date du jour (vendredi) à comparer avec le vendredi de la semaine du nouvel an
-    //const formattedDate = `${day}/${month}/${year}`;
-    const formattedDate = "03/01/2025";
+    const formattedDate = `${day}/${month}/${year}`;
     // Date du jour (vendredi) à comparer avec la date du fichier update-dates.json
     const formattedDateHoursMin = `${formattedDate} ${hours}:${minutes}`;
     // Date du fichier update-dates.json (vendredi)
     const lastFridayJsonRecorded = await getLastDate();
     // Instancie le 1er vendredi de l'année qui tombe sur la semaine du nouvel an
-    //const currentYear: number = new Date().getFullYear();
-    //const lastWeeksPerYear: EndDatesYearsTypes = deuxDernieresSemaines(currentYear);
-    //const secondFridayHoliday: string = lastWeeksPerYear.derniereSemaine.vendredi;
-    const secondFridayHoliday = "03/01/2025";
+    const currentYear = new Date().getFullYear();
+    const lastWeeksPerYear = (0, dateUtils_1.deuxDernieresSemaines)(currentYear);
+    const secondFridayHoliday = lastWeeksPerYear.derniereSemaine.vendredi;
     /*
         Si le dernier vendredi enregistré dans "update-dates.json" correspond
         à aujourd'hui, ou si le 1er vendredi de l'année correspond à la date
@@ -291,11 +279,10 @@ const fetchCMSData = async () => {
 };
 /*
     Lancement de la fonction fetchCMSData() programmé pour
-    chaque vendredi à 08:00 ("0 7 * * 5")
+    chaque vendredi à 08:00 UTC ("0 7 * * 5")
 */
-node_cron_1.default.schedule("30 9 * * 2", async () => {
+node_cron_1.default.schedule("0 7 * * 5", async () => {
     const today = new Date();
-    //console.log(`Date et heure actuelles : ${today.toLocaleString()}`);
     const dateUTC = today.toLocaleDateString("fr-FR", {
         timeZone: "UTC",
     });
