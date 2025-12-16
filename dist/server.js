@@ -301,5 +301,5 @@ node_cron_1.default.schedule("0 7 * * 5", async () => {
 });
 app.get("/healthz", (req, res) => res.status(200).send("OK"));
 app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Serveur en cours d'exécution sur http://localhost:${PORT}`);
+    console.log(`Serveur en cours d'exécution sur le PORT: ${PORT}`);
 });
