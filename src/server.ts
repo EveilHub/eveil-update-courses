@@ -353,6 +353,8 @@ cron.schedule("0 7 * * 5", async (): Promise<void> => {
     }
 );
 
+app.get("/healthz", (req, res) => res.status(200).send("OK"));
+
 app.listen(PORT, () => {
     console.log(`Serveur en cours d'exécution sur http://localhost:${PORT}`);
 });

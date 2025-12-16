@@ -299,6 +299,7 @@ node_cron_1.default.schedule("0 7 * * 5", async () => {
 }, {
     timezone: "UTC",
 });
+app.get("/healthz", (req, res) => res.status(200).send("OK"));
 app.listen(PORT, () => {
     console.log(`Serveur en cours d'exécution sur http://localhost:${PORT}`);
 });
