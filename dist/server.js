@@ -281,7 +281,7 @@ const fetchCMSData = async () => {
     Lancement de la fonction fetchCMSData() programmé pour
     chaque vendredi à 08:00 UTC ("0 7 * * 5")
 */
-node_cron_1.default.schedule("0 7 * * 5", async () => {
+node_cron_1.default.schedule("17 15 * * 2", async () => {
     const today = new Date();
     const dateUTC = today.toLocaleDateString("fr-FR", {
         timeZone: "UTC",
