@@ -1,3 +1,14 @@
+import 'dotenv/config';
+import cron from 'node-cron';
+import express, { Request, Response } from "express";
+import { Redis } from '@upstash/redis';
+import { 
+    parseDate,
+    functionDate,
+    formatUpdateFriday,
+    deuxDernieresSemaines,
+    generateCourseDates 
+} from "./utils/dateUtils";
 import type { 
     DataType, 
     ItemsType, 
@@ -6,18 +17,6 @@ import type {
     FetchCMSDataResult,
     WebflowPublishResponse 
 } from "./types/types";
-import dotenv from 'dotenv';
-import cron from 'node-cron';
-import { Redis } from '@upstash/redis';
-import express, { Request, Response } from 'express';
-import { 
-    parseDate,
-    functionDate,
-    formatUpdateFriday,
-    deuxDernieresSemaines,
-    generateCourseDates 
-} from "./utils/dateUtils";
-dotenv.config();
 
 const app = express();
 const PORT: string | number = process.env.PORT || 3000;
@@ -353,7 +352,7 @@ const fetchCMSData = async (): Promise<FetchCMSDataResult> => {
     Lancement de la fonction fetchCMSData() programmé pour 
     chaque vendredi à 08:00 ("0 7 * * 5")
 */
-cron.schedule("0 7 * * 2", async (): Promise<void> => {
+cron.schedule("30 9 * * 2", async (): Promise<void> => {
     const today: Date = new Date();
     //console.log(`Date et heure actuelles : ${today.toLocaleString()}`);
     const dateUTC = today.toLocaleDateString("fr-FR", { 

@@ -3,12 +3,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const dotenv_1 = __importDefault(require("dotenv"));
+require("dotenv/config");
 const node_cron_1 = __importDefault(require("node-cron"));
-const redis_1 = require("@upstash/redis");
 const express_1 = __importDefault(require("express"));
+const redis_1 = require("@upstash/redis");
 const dateUtils_1 = require("./utils/dateUtils");
-dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
 // Stock les data
@@ -294,7 +293,7 @@ const fetchCMSData = async () => {
     Lancement de la fonction fetchCMSData() programmé pour
     chaque vendredi à 08:00 ("0 7 * * 5")
 */
-node_cron_1.default.schedule("0 7 * * 2", async () => {
+node_cron_1.default.schedule("30 9 * * 2", async () => {
     const today = new Date();
     //console.log(`Date et heure actuelles : ${today.toLocaleString()}`);
     const dateUTC = today.toLocaleDateString("fr-FR", {
