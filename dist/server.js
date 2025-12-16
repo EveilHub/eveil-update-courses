@@ -9,7 +9,7 @@ const express_1 = __importDefault(require("express"));
 const redis_1 = require("@upstash/redis");
 const dateUtils_1 = require("./utils/dateUtils");
 const app = (0, express_1.default)();
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = Number(process.env.PORT) || 10000;
 // Stock les data
 let informations = [];
 const redis = new redis_1.Redis({

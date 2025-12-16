@@ -19,7 +19,7 @@ import type {
 } from "./types/types";
 
 const app = express();
-const PORT = Number(process.env.PORT) || 3000;
+const PORT: number = Number(process.env.PORT) || 10000;
 
 // Stock les data
 let informations: InformationsType[] = [];
