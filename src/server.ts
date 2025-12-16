@@ -353,10 +353,6 @@ cron.schedule("0 7 * * 5", async (): Promise<void> => {
     }
 );
 
-app.get("/health", (req: Request, res: Response) => {
-    res.status(200).json({ status: "API is running !" });
-});
-
 app.listen(PORT, () => {
     console.log(`Serveur en cours d'exécution sur http://localhost:${PORT}`);
 });

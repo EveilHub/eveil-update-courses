@@ -299,9 +299,6 @@ node_cron_1.default.schedule("0 7 * * 5", async () => {
 }, {
     timezone: "UTC",
 });
-app.get("/health", (req, res) => {
-    res.status(200).json({ status: "API is running !" });
-});
 app.listen(PORT, () => {
     console.log(`Serveur en cours d'exécution sur http://localhost:${PORT}`);
 });
