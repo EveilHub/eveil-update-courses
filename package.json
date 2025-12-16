@@ -4,9 +4,7 @@
   "description": "",
   "scripts": {
     "build": "tsc",
-    "dev": "node dist/server.js",
-    "start": "node dist/server.js",
-    "postinstall": "pnpm run build"
+    "start": "node dist/server.js"
   },
   "keywords": [],
   "author": "",
