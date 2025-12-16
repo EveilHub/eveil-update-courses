@@ -19,7 +19,7 @@ import type {
 } from "./types/types";
 
 const app = express();
-const PORT: string | number = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 // Stock les data
 let informations: InformationsType[] = [];
@@ -355,6 +355,6 @@ cron.schedule("0 7 * * 5", async (): Promise<void> => {
 
 app.get("/healthz", (req, res) => res.status(200).send("OK"));
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
     console.log(`Serveur en cours d'exécution sur http://localhost:${PORT}`);
 });

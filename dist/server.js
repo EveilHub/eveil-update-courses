@@ -9,7 +9,7 @@ const express_1 = __importDefault(require("express"));
 const redis_1 = require("@upstash/redis");
 const dateUtils_1 = require("./utils/dateUtils");
 const app = (0, express_1.default)();
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 3000;
 // Stock les data
 let informations = [];
 const redis = new redis_1.Redis({
@@ -300,6 +300,6 @@ node_cron_1.default.schedule("0 7 * * 5", async () => {
     timezone: "UTC",
 });
 app.get("/healthz", (req, res) => res.status(200).send("OK"));
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
     console.log(`Serveur en cours d'exécution sur http://localhost:${PORT}`);
 });
