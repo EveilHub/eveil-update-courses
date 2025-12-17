@@ -10,7 +10,7 @@ const node_cron_1 = __importDefault(require("node-cron"));
 const express_1 = __importDefault(require("express"));
 const dateUtils_1 = require("./utils/dateUtils");
 const app = (0, express_1.default)();
-const PORT = Number(process.env.PORT) || 4000;
+const PORT = Number(process.env.PORT) || 3000;
 // Stock les data
 let informations = [];
 const filePath = path_1.default.join(__dirname, "./utils/update-dates.json");
@@ -120,8 +120,12 @@ const handleIdValue = async (itemId, idValue, date, semaine, cours, formattedDat
     const lastWeeksPerYear = (0, dateUtils_1.deuxDernieresSemaines)(currentYear);
     const holidays = Object.values(lastWeeksPerYear).flatMap((week) => Object.values(week));
     const verifyHolidays = holidays.includes(nextDate);
+    // Détermine si on est en janvier
     const aujourdHui = new Date();
     const moisActuel = aujourdHui.getMonth();
+    // Détermine l'année
+    let parts = nextDate.split("/");
+    let yearOfNexDate = parts[2];
     if ((moisActuel === 0) && (idValue === 1)) {
         await clearArray();
         await addDate(update);
@@ -146,6 +150,11 @@ const handleIdValue = async (itemId, idValue, date, semaine, cours, formattedDat
                 }
                 return;
             }
+        }
+        else if (Number(yearOfNexDate) !== currentYear) {
+            // Génère "--/--/----" pour les jours restants si l'année est différente
+            console.log(`2) MAJ du CMS par idValue ${idValue}: ${nextDate}`, "correspondant à", `Semaine ${semaine}`, cours);
+            await updateCMSItem(itemId, idValue, noDates);
         }
         else {
             // MAJ des dates avec nextDate
@@ -290,9 +299,8 @@ const fetchCMSData = async () => {
 };
 /*
     Lancement de la fonction fetchCMSData() programmé pour
-    chaque vendredi à 08:00 UTC ("0 7 * * 5")
+    chaque vendredi à 08:00 ("0 8 * * 5")
 */
-//cron.schedule("23 10 * * 3", async (): Promise<void> => {
 node_cron_1.default.schedule("*/2 * * * *", async () => {
     const triggerDate = new Date();
     console.log("------ Cron Job lancé ------");

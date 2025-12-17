@@ -18,7 +18,7 @@ et une nouvelle date de MAJ est écrite dans ce même fichier.
 
 Tout ce dont quoi l'API a besoin pour se connecter à la CMS Collection, se trouve dans le fichier `.env`
 
-Les updates s'effectuent à partir d'un timezone UTC.
+Les updates s'effectuent à partir d'un timezone: "Europe/Paris".
 
 ---
 
@@ -28,7 +28,7 @@ Les updates se font grâce à `node-cron`, au fichier `update-dates.json`, et au
 
 node-cron se délenche tous les vendredi à 08:00.
 
-`cron.schedule("* 8 * * 5", async () => {})`.
+`cron.schedule("0 8 * * 5", async () => {})`.
 
 Les dates sont MAJ toutes les 8 semaines le vendredi à 08:00, excepté le vendredi de la première semaine de l'année
 (dernière semaine de l'année précédente). Seul ce vendredi peut générer des nouvelles dates pour les 8 premières
@@ -178,7 +178,7 @@ app.use((req: Request, res: Response, next: NextType) => {
 });
 ```
 
-### HTTPS
+### HTTPS (PAS BESOIN - NON ACCESSIBLE AUX CLIENTS)
 
 `openssl req -nodes -new -x509 -keyout server.key -out server.cert`
 
@@ -260,7 +260,7 @@ Nb de jours après update:
 - test avec nouvelle année (générer de nouvelles dates) - done !!!
 
 
-## Console.log() & update-dates.json
+### Console.log() & update-dates.json
 
 Mettre la date dans le fichier `update-dates.json`.
 
