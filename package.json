@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && cp ./src/utils/update-dates.json ./dist/utils/",
+    "dev": "node dist/server.js",
     "start": "node dist/server.js"
   },
   "keywords": [],

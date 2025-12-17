@@ -76,8 +76,9 @@ const deuxDernieresSemaines = (annee) => {
     // Calcul des jeudis
     let dernierJeudi = new Date(dernierLundi);
     dernierJeudi.setDate(dernierLundi.getDate() + 3);
+    // 1er vendredi de l'année
     let dernierVendredi = new Date(dernierLundi);
-    dernierVendredi.setDate(dernierLundi.getDate() + 4); // Vendredi (4 jours après lundi)
+    dernierVendredi.setDate(dernierLundi.getDate() + 4);
     return {
         avantDerniereSemaine: {
             lundi: formatDate(avantDernierLundi),

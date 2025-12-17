@@ -24,7 +24,7 @@ const PORT: number = Number(process.env.PORT) || 4000;
 
 // Stock les data
 let informations: InformationsType[] = [];
-const filePath = path.join(__dirname, "update-dates.json");
+const filePath = path.join(__dirname, "./utils/update-dates.json");
 
 // SAUVEGARDE LES DATES DANS update-dates.json
 const addDate = async (dataDate: string): Promise<void> => {
@@ -146,7 +146,7 @@ const handleIdValue = async (
         La 1ère comprend Noël et la seconde comprend nouvel an.
     */
     const lastWeeksPerYear: EndDatesYearsTypes = deuxDernieresSemaines(currentYear);
-    const holidays = Object.values(lastWeeksPerYear).flatMap((week) => Object.values(week));
+    const holidays: string[] = Object.values(lastWeeksPerYear).flatMap((week) => Object.values(week));
     const verifyHolidays: boolean = holidays.includes(nextDate);
     
     const aujourdHui: Date = new Date();
@@ -292,10 +292,10 @@ const fetchCMSData = async (): Promise<FetchCMSDataResult> => {
     const minutes = pad(nowDateHmin.getMinutes());
 
     // Date du jour (vendredi) à comparer avec le vendredi de la semaine du nouvel an
-    const formattedDate = `${day}/${month}/${year}`;
-
+    const formattedDate: string = `${day}/${month}/${year}`;
+    
     // Date du jour (vendredi) à comparer avec la date du fichier update-dates.json
-    const formattedDateHoursMin = `${formattedDate} ${hours}:${minutes}`;
+    const formattedDateHoursMin: string = `${formattedDate} ${hours}:${minutes}`;
 
     // Date du fichier update-dates.json (vendredi)
     const lastFridayJsonRecorded: string | null = await getLastDate();
@@ -346,7 +346,8 @@ const fetchCMSData = async (): Promise<FetchCMSDataResult> => {
     Lancement de la fonction fetchCMSData() programmé pour 
     chaque vendredi à 08:00 UTC ("0 7 * * 5")
 */
-cron.schedule("17 15 * * 2", async (): Promise<void> => {
+//cron.schedule("23 10 * * 3", async (): Promise<void> => {
+cron.schedule("*/2 * * * *", async (): Promise<void> => {
     const triggerDate = new Date();
     console.log("------ Cron Job lancé ------");
     console.log("Date locale :", triggerDate.toLocaleString("fr-FR", { timeZone: "Europe/Paris" }));
@@ -363,7 +364,9 @@ cron.schedule("17 15 * * 2", async (): Promise<void> => {
     }
 );
 
-app.get("/healthz", (req: Request, res: Response) => res.status(200).send("OK"));
+app.get("/healthz", (req: Request, res: Response) => {
+    res.status(200).send("Eveil API ok !");
+});
 
 app.listen(PORT, () => {
     console.log(`Serveur en cours d'exécution sur le PORT: ${PORT}`);
