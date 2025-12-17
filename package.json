@@ -11,7 +11,6 @@
   "license": "ISC",
   "packageManager": "pnpm@10.25.0",
   "dependencies": {
-    "@upstash/redis": "^1.35.8",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "node-cron": "^4.2.1",
@@ -23,6 +22,6 @@
     "typescript": "^5.9.3"
   },
   "engines": {
-    "node": "20.x"
+    "node": "25.x"
   }
 }

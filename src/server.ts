@@ -1,7 +1,8 @@
+import fs from "fs";
+import path from "path";
 import 'dotenv/config';
 import cron from 'node-cron';
 import express, { Request, Response } from "express";
-import { Redis } from '@upstash/redis';
 import { 
     parseDate,
     functionDate,
@@ -19,48 +20,59 @@ import type {
 } from "./types/types";
 
 const app = express();
-const PORT: number = Number(process.env.PORT) || 10000;
+const PORT: number = Number(process.env.PORT) || 4000;
 
 // Stock les data
 let informations: InformationsType[] = [];
+const filePath = path.join(__dirname, "update-dates.json");
 
-const redis = new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL!,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
-
-// ----------------------------------------
-// Charger - Ajouter les dates depuis Redis
-// ----------------------------------------
-const addDate = async (date: string): Promise<void> => {
-    const raw = await redis.get('update_dates');
-    if (typeof raw !== 'string') {
-        const dates: Record<string, string> = { "0": date };
-        await redis.set('update_dates', JSON.stringify(dates));
-        return;
-    }
-    const dates = JSON.parse(raw) as Record<string, string>;
-    if (dates["0"] === date) return;
-    dates["0"] = date;
-    await redis.set('update_dates', JSON.stringify(dates));
-};
-
-const getLastDate = async (): Promise<string | null> => {
-    const raw = await redis.get("update_dates");
-    if (!raw) return null;
-    if (typeof raw === "object" && raw !== null) {
-        return (raw as Record<string, string>)["0"] ?? null;
-    }
-    if (typeof raw === "string") {
+// SAUVEGARDE LES DATES DANS update-dates.json
+const addDate = async (dataDate: string): Promise<void> => {
+    let items: string[] = [];
+    if (fs.existsSync(filePath)) {
         try {
-            const dates = JSON.parse(raw) as Record<string, string>;
-            return dates["0"] ?? null;
+            const raw = await fs.promises.readFile(filePath, "utf-8");
+            items = JSON.parse(raw);
         } catch (err) {
-            console.error("Erreur JSON.parse:", err, raw);
-            return null;
+            console.error("Erreur lecture JSON:", err);
+            items = [];
         }
     }
-    return null;
+    items.push(dataDate);
+    await fs.promises.writeFile(filePath, JSON.stringify(items, null, 2), "utf-8");
+};
+
+// LECTURE DE LA DERNIERE VALEUR DANS update-dates.json
+const getLastDate = async (): Promise<string | null> => {
+    try {
+        // Vérifie si le fichier existe
+        await fs.promises.access(filePath);
+
+        // Lit le fichier de manière asynchrone
+        const raw = await fs.promises.readFile(filePath, "utf-8");
+        const dates: string[] = JSON.parse(raw);
+
+        if (dates.length === 0) return null;
+
+        // Retourne le dernier élément du tableau
+        return dates[dates.length - 1];
+    } catch (err: any) {
+        // Si le fichier n'existe pas ou si erreur JSON, retourne null
+        if (err.code !== "ENOENT") {
+            console.error("Erreur lors de la lecture de await getLastDate:", err);
+        }
+        return null;
+    }
+};
+
+// EFFACE COMPLETEMENT LE TABLEAU DU update-dates.json
+const clearArray = async (): Promise<void> => {
+    try {
+        await fs.promises.writeFile(filePath, JSON.stringify([], null, 2), "utf-8");
+        console.log("Le tableau a été vidé !");
+    } catch (err) {
+        console.error("Erreur lors de la suppression :", err);
+    }
 };
 
 // -----------
@@ -141,7 +153,7 @@ const handleIdValue = async (
     const moisActuel: number = aujourdHui.getMonth();
 
     if ((moisActuel === 0) && (idValue === 1)) {
-        await redis.set("update_dates", JSON.stringify({}));
+        await clearArray();
         await addDate(update);
     } else if ((moisActuel !== 0) && (idValue === 1)) {
         await addDate(update);
@@ -166,8 +178,9 @@ const handleIdValue = async (
                 return;
             }
         } else {
+            // MAJ des dates avec nextDate
             console.log(`2) MAJ du CMS par idValue ${idValue}: ${nextDate}`, "correspondant à",
-              `Semaine ${semaine}`, cours);
+                `Semaine ${semaine}`, cours);
             await updateCMSItem(itemId, idValue, nextDate);
         }
     } else if (moisActuel === 0) {
@@ -267,16 +280,16 @@ const fetchCMSData = async (): Promise<FetchCMSDataResult> => {
     }
 
     // Fixe la date du jour
-    const now: Date = new Date();
+    const nowDateHmin: Date = new Date();
 
     // Fn() qui sert à formatter les dates pour ci-dessous
     const pad = (n: number) => String(n).padStart(2, "0");
 
-    const day = pad(now.getUTCDate());
-    const month = pad(now.getUTCMonth() + 1);
-    const year = now.getUTCFullYear();
-    const hours = pad(now.getUTCHours());
-    const minutes = pad(now.getUTCMinutes());
+    const day = pad(nowDateHmin.getDate());
+    const month = pad(nowDateHmin.getMonth() + 1);
+    const year = nowDateHmin.getFullYear();
+    const hours = pad(nowDateHmin.getHours());
+    const minutes = pad(nowDateHmin.getMinutes());
 
     // Date du jour (vendredi) à comparer avec le vendredi de la semaine du nouvel an
     const formattedDate = `${day}/${month}/${year}`;
@@ -334,27 +347,24 @@ const fetchCMSData = async (): Promise<FetchCMSDataResult> => {
     chaque vendredi à 08:00 UTC ("0 7 * * 5")
 */
 cron.schedule("17 15 * * 2", async (): Promise<void> => {
-    const today: Date = new Date();
-    const dateUTC = today.toLocaleDateString("fr-FR", { 
-        timeZone: "UTC",
-    });
+    const triggerDate = new Date();
     console.log("------ Cron Job lancé ------");
-    console.log(`Date UTC : ${dateUTC}`);
+    console.log("Date locale :", triggerDate.toLocaleString("fr-FR", { timeZone: "Europe/Paris" }));
     try {
         await fetchCMSData();
         console.log("fetchCMSData() terminé avec succès !");
     } catch (err) {
         console.error("Erreur lors de fetchCMSData() :", err);
     }
-        console.log("---------------------------");
+    console.log("---------------------------");
     },
     {
-        timezone: "UTC",
+        timezone: "Europe/Paris",
     }
 );
 
-app.get("/healthz", (req, res) => res.status(200).send("OK"));
+app.get("/healthz", (req: Request, res: Response) => res.status(200).send("OK"));
 
-app.listen(PORT, "0.0.0.0", () => {
+app.listen(PORT, () => {
     console.log(`Serveur en cours d'exécution sur le PORT: ${PORT}`);
 });

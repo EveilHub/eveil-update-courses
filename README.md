@@ -2,7 +2,7 @@
 
 L'API récupère les dates de la CMS Collection et les renvois à la CMS Collection, une fois que les dates sont updated.
 
-Les dates sont updated à la 8ème semaine de cours, le vendredi à 08:00, grâce à Upstash.
+Les dates sont updated à la 8ème semaine de cours, le vendredi à 08:00, grâce au fichier `update-dates.json`.
 
 - Update des dates en début d'année
 
@@ -155,6 +155,7 @@ Malgré qu'aucune donnée sensible ne soit partagée, il y quand même une sécu
 - TypeScript => fichier `types.ts` contient tous les types de l'API.
 - Gestion des erreurs => try - catch - console.error()
 - Fichier `.env` qui contient toutes les données pour les connexions.
+- HTTPS pour les connexions
 
 ```
   id-value correspond à l'id_value de la CMS Collection.
@@ -174,6 +175,35 @@ app.use((req: Request, res: Response, next: NextType) => {
   res.setHeader("Access-Control-Allow-Methods", "GET,POST");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   next();
+});
+```
+
+### HTTPS
+
+`openssl req -nodes -new -x509 -keyout server.key -out server.cert`
+
+```
+import * as https from 'https';
+import * as fs from 'fs';
+import express from 'express';
+
+const app = express();
+
+// Load SSL certificate and key
+const options = {
+    key: fs.readFileSync('server.key'),
+    cert: fs.readFileSync('server.cert')
+};
+
+// Basic route for testing
+app.get('/', (req, res) => {
+    res.send('Hello, HTTPS!');
+});
+
+// Create HTTPS server
+const port = 3000;
+https.createServer(options, app).listen(port, () => {
+    console.log(`HTTPS Server running at https://localhost:${port}`);
 });
 ```
 
@@ -213,45 +243,6 @@ curl -X POST https://api.webflow.com/v2/sites/43985798375893/publish \
   "publishToWebflowSubdomain": false
 }'
 ```
-
----
-
-## Hébergement
-
-### Render
-
-`Render.com` est le meilleur choix gratuit et stable.
-
-Choisir le service adapté pour héberger l'api.
-
-1) Importer le repo depuis GitHub.
-
-2) Ajouter dans `package.json` :
-```
-  "engines": {
-    "node": "25.2.x"
-  }
-```
-
-3) Créer `.nvmrc` et `.node-version` et écrire la version de node dedans : `25.2.1`
-
-(Connaître la version de node : `node -v`)
-
-4) Ajouter un PORT, excepté ceux indiqué dans la doc officielle de Render dans le `.env`.
-
-5) Placer toutes les données dans la configuration de l'environnement de Render (copier-coller)
-et ajouter `NODE_VERSION=25.2.1`
-
-6) Fuseau Horaire de Render.com: UTF GMT+1 (donc -1 dans notre code)
-
----
-
-### Upstash
-
-`Upstash.com`
-
-Il n'est pas possible de lire et d'écrire dans un fichier json car les données s'efface sur le fichier à chaque fois que le container reboot.
-Pour rendre les données persistantes, j'ai opté pour Upstash. Les dates sont ainsi stockées dessus gratuitement. 
 
 ---
 
@@ -337,4 +328,5 @@ console.log("++ Dates 2er lundi (vacances)", secondLundiVacances);
 // const moisActuel: number = 0;
 
 // console.log("nextDate", nextDate);
+
 ```
