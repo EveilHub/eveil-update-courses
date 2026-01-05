@@ -1,4 +1,4 @@
-# Eveil API
+# EveilHub API
 
 L'API récupère les dates de la CMS Collection, une fois que les dates sont MAJ, elle les retournent à la CMS Collection.
 
@@ -17,11 +17,10 @@ le vendredi de la 8ème semaine.
 Ensuite, la MAJ des dates est à nouveau gérée grâce au fichier `update-dates.json`, chaque vendredi de la 8ème semaine
 et une nouvelle date de MAJ est écrite dans ce même fichier (`update-dates.json`).
 
-Le fichier `.env` contient toutes les data (cachées) servant aux connexions (port et propriétés) avec la CMS Collection.
 
 ---
 
-## Update 
+## Update Process 
 
 Les updates se font grâce à `node-cron`, au fichier `update-dates.json`, et aux fonctions asynchrones de l'API.
 
@@ -29,9 +28,8 @@ Les updates se font grâce à `node-cron`, au fichier `update-dates.json`, et au
 
 `cron.schedule("0 8 * * 5", async () => {})`.
 
-Les dates sont MAJ toutes les 8 semaines le vendredi à 08:00, excepté le vendredi de la première semaine de l'année
-(dernière semaine de l'année précédente). Seul ce vendredi peut générer des nouvelles dates pour les 8 premières
-semaines de cours de l'année.
+Les dates sont MAJ toutes les 8 semaines le vendredi à 08:00, excepté le vendredi de la première semaine de l'année. 
+Seul ce vendredi peut générer des nouvelles dates pour les 8 premières semaines de cours de l'année.
 
 `const moisActuel: number = aujourdHui.getMonth();`
 
@@ -103,42 +101,19 @@ const handleIdValue = async () => {
 }
 ```
 
-6) Dans la console, lancé les CMS suivantes : 
-
-`npx tsc`
-
-`pnpm run dev`
-
-Vous pourrez voir les dates s'afficher dans la console.
-
----
-
-## Attention
-
-- Enlever `now.setHours(8, 0, 0, 0);` sinon, ça sera la date du jour avec 08:00 sur 24 heures... !!! 
-Utilisable pour les tests.
-
-- Vérifier si `cron.schedule("0 8 * * 5", async () => {})` pour que ça se déclenche tous les vendredi à 8h00.
-
-- Pour 8 semaines `idValueToUpdate <= 72` : `for (let idValueToUpdate = 1; idValueToUpdate <= 72; idValueToUpdate++)`
-
----
-
-## CMD pour lancer l'API
-
-`npx tsc`
-
-`pnpm run build`
-
-`pnpm run dev`
+6) Dans la console ou terminal : 
 
 ## Lancement
 
-- Install
+- Installation
+
+`git clone https://github.com/EveilHub/eveil-update-courses.git`
+
+`cd eveil-update-courses`
 
 `pnpm install`
 
-- Mode PRODUCTION
+- Mode PRODUCTION ou DEV
 
 `npx tsc`
 
@@ -146,11 +121,13 @@ Utilisable pour les tests.
 
 `pnpm run start`
 
-- Mode DEV
+## CMD pour lancer l'API
 
 `npx tsc`
 
-`pnpm run dev`
+`pnpm run build`
+
+`pnpm run start`
 
 ---
 
@@ -159,9 +136,24 @@ Utilisable pour les tests.
 Malgré qu'aucune donnée sensible ne soit partagée, il y quand même une sécurité pensée.
 
 - TypeScript => fichier `types.ts` contient tous les types de l'API.
-- Gestion des erreurs => try - catch - console.error()
+
+Typage pour éviter les erreurs et buggs.
+
+- Gestion des erreurs => try - catch - throw Error - console.error()
+
+Avec les fonction asynchrones en JavaScript moderne.
+
 - Fichier `.env` qui contient toutes les données pour les connexions.
+
+Le fichier `.env` contient toutes les data servant aux connexions (port et propriétés) avec la CMS Collection. Ce 
+fichier est caché sur github grâce au fichier `.gitignore` par mesure de sécurité.
+
 - HTTPS pour les connexions
+
+Pas besoins de https, car ce n'est pas un site web, mais une API. Aussi ce n'est pas accessible par un utilisateur
+sur un nom de domaine ou par interface ou navigateur (pas d'interractions).
+
+- Particularités
 
 ```
   id-value correspond à l'id_value de la CMS Collection.
@@ -172,7 +164,7 @@ Malgré qu'aucune donnée sensible ne soit partagée, il y quand même une sécu
 ```
 
 Si le server serait exposer au frontend, il faudrait utiliser les CORS !
-Mais puisque les utilisateurs n'auront pas accès, on en n'a pas besoin.
+Mais puisque les utilisateurs n'ont pas accès, on en n'a pas besoin.
 
 ```
 //accepter les ressources pour afficher des data sur page de webflow
@@ -183,85 +175,3 @@ app.use((req: Request, res: Response, next: NextType) => {
   next();
 });
 ```
-
-### HTTPS (PAS BESOIN - NON ACCESSIBLE AUX CLIENTS)
-
-`openssl req -nodes -new -x509 -keyout server.key -out server.cert`
-
-```
-import * as https from 'https';
-import * as fs from 'fs';
-import express from 'express';
-
-const app = express();
-
-// Load SSL certificate and key
-const options = {
-    key: fs.readFileSync('server.key'),
-    cert: fs.readFileSync('server.cert')
-};
-
-// Basic route for testing
-app.get('/', (req, res) => {
-    res.send('Hello, HTTPS!');
-});
-
-// Create HTTPS server
-const port = 3000;
-https.createServer(options, app).listen(port, () => {
-    console.log(`HTTPS Server running at https://localhost:${port}`);
-});
-```
-
----
-
-## Mes aides
-```
-// ---------------------------------
-// 2. PUBLISH SITE V1 (pages + CMS)
-// ---------------------------------
-await fetch(
-  `https://api.webflow.com/v2/sites/${SITE_ID}/publish`,
-  {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${API_TOKEN}`,
-      "Content-Type": "application/json"
-    },
-      body: JSON.stringify({
-        live: true
-    }),
-  }
-);
-```
-`https://developers.webflow.com/data/docs/working-with-the-cms/manage-collections-and-items#defining-reference-and-multi-reference-fields`
-
-### API v2 PUBLISH
-```
-curl -X POST https://api.webflow.com/v2/sites/43985798375893/publish \
-     -H "Authorization: Bearer <token>" \
-     -H "Content-Type: application/json" \
-     -d '{
-  "customDomains": [
-    "743895789435743",
-    "345438574387584"
-  ],
-  "publishToWebflowSubdomain": false
-}'
-```
-
----
-
-## TEST
-
-Nb de jours après update:
-- update du friday nouvel an (1ère semaine) - done !!!
-- update du friday normal - done !!!
-- jours cms collection - done !!!
-- gestion des erreurs avec les fn() async - done !!!
-
-`update-dates.json` :
-- vendredi suivant la génération de date - done !!!
-- date suivante placée avant - done !!!
-- test avec nouvelle année (générer de nouvelles dates) - done !!!
-
