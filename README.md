@@ -1,8 +1,9 @@
 # Eveil API
 
-L'API récupère les dates de la CMS Collection et les renvois à la CMS Collection, une fois que les dates sont updated.
+L'API récupère les dates de la CMS Collection, une fois que les dates sont MAJ, elle les retournent à la CMS Collection.
 
-Les dates sont updated à la 8ème semaine de cours, le vendredi à 08:00, grâce au fichier `update-dates.json`.
+Les dates sont MAJ à la 8ème semaine de cours, le vendredi à 08:00, grâce au fichier `update-dates.json`, excepté en 
+début d'année (voir ci-dessous).
 
 - Update des dates en début d'année
 
@@ -14,19 +15,17 @@ le vendredi de la 8ème semaine.
 - Update des dates pour le restant de l'année
 
 Ensuite, la MAJ des dates est à nouveau gérée grâce au fichier `update-dates.json`, chaque vendredi de la 8ème semaine
-et une nouvelle date de MAJ est écrite dans ce même fichier.
+et une nouvelle date de MAJ est écrite dans ce même fichier (`update-dates.json`).
 
-Tout ce dont quoi l'API a besoin pour se connecter à la CMS Collection, se trouve dans le fichier `.env`
-
-Les updates s'effectuent à partir d'un timezone: "Europe/Paris".
+Le fichier `.env` contient toutes les data (cachées) servant aux connexions (port et propriétés) avec la CMS Collection.
 
 ---
 
 ## Update 
 
-Les updates se font grâce à `node-cron`, au fichier `update-dates.json`, et au code.
+Les updates se font grâce à `node-cron`, au fichier `update-dates.json`, et aux fonctions asynchrones de l'API.
 
-node-cron se délenche tous les vendredi à 08:00.
+`node-cron` se délenche tous les vendredi à 08:00.
 
 `cron.schedule("0 8 * * 5", async () => {})`.
 
@@ -42,8 +41,9 @@ faut générer des nouvelles dates, plutôt que de reprendre les anciennes de la
 
 Si `moisActuel > 0`, alors la MAJ des dates se fait toutes les 8 semaines de cours, le vendredi. 
 
-Durant les 2 dernières semaines de l'année, qui sont des semaines de vacances, les dates sont notées sous la forme de 
-`"--/--/----"` peut importe la semaine sur laquelle ça tombe, ça ne change rien.
+Durant les 2 dernières semaines de l'année, qui sont des semaines de vacances, les dates sont notées sous la forme 
+de `"--/--/----"`, jusqu'à la 8ème semaine (puisque des nouvelles dates seront générées à partir du vendredi de la 
+première semaine de l'année).
 
 ---
 
@@ -80,7 +80,9 @@ const handleIdValue = async () => {
 
 `npx tsc`
 
-`pnpm run dev`
+`pnpm run build`
+
+`pnpm run start`
 
 5) Ensuite, effacer la dernière date écrite dans : `update-dates.json`.
 ```
@@ -126,6 +128,8 @@ Utilisable pour les tests.
 
 `npx tsc`
 
+`pnpm run build`
+
 `pnpm run dev`
 
 ## Lancement
@@ -134,17 +138,19 @@ Utilisable pour les tests.
 
 `pnpm install`
 
-- Mode BUILD
+- Mode PRODUCTION
 
-`node dist/server.js`
+`npx tsc`
+
+`pnpm run build`
+
+`pnpm run start`
 
 - Mode DEV
 
 `npx tsc`
 
 `pnpm run dev`
-
-Affichage dans la console ou terminal.
 
 ---
 
@@ -259,74 +265,3 @@ Nb de jours après update:
 - date suivante placée avant - done !!!
 - test avec nouvelle année (générer de nouvelles dates) - done !!!
 
-
-### Console.log() & update-dates.json
-
-Mettre la date dans le fichier `update-dates.json`.
-
-### fn => fetchCMSData()
-
-```
-// --- À retirer en version finale ---
-// Simule 08:00
-// now.setHours(8, 0, 0, 0);
-// --- --------------------------- ---
-
-console.log("*** lastFridayJsonRecorded ***", lastFridayJsonRecorded);
-
-console.log("*** formattedDateHoursMin ***", formattedDateHoursMin);
-
-console.log("*** formattedDate ***", formattedDate);
-
-// test 1
-//const formattedDate: string = "02/01/2026";
-
-// test 2
-//const formattedDateHoursMin: string = "02/01/2026 08:00";
-
-// test 3
-//const lastFridayJsonRecorded: string | undefined = "02/01/2026 08:00";
-
-// test 4
-// const secondFridayHoliday: string = "02/01/2026";
-
-// fetchCMSData();
-```
----
-
-### fn => handleIdValue()
-
-```
-const firstLundiVacances: string = lastWeeksPerYear.avantDerniereSemaine.lundi;
-
-const firstMardiVacances: string = lastWeeksPerYear.avantDerniereSemaine.mardi;
-
-const firstMercrediVacances: string = lastWeeksPerYear.avantDerniereSemaine.mercredi;
-
-const firstJeudiVacances: string = lastWeeksPerYear.avantDerniereSemaine.jeudi;
-
-const secondLundiVacances: string = lastWeeksPerYear.derniereSemaine.lundi;
-
-const secondMardiVacances: string = lastWeeksPerYear.derniereSemaine.mardi;
-
-const secondMercrediVacances: string = lastWeeksPerYear.derniereSemaine.mercredi;
-
-const secondJeudiVacances: string = lastWeeksPerYear.derniereSemaine.jeudi;
-
-const holidays: string[] = [
-    firstLundiVacances, firstMardiVacances, firstMercrediVacances, firstJeudiVacances,
-    secondLundiVacances, secondMardiVacances, secondMercrediVacances, secondJeudiVacances
-];
-
-console.log("+ Dates 1er lundi (vacances)", firstLundiVacances);
-console.log("++ Dates 2er lundi (vacances)", secondLundiVacances);
-
-// test 5 nouvelle année
-//const currentYear: number = 2026;
-
-// test 6
-// const moisActuel: number = 0;
-
-// console.log("nextDate", nextDate);
-
-```

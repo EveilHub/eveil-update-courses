@@ -302,7 +302,8 @@ const fetchCMSData = async (): Promise<FetchCMSDataResult> => {
     const minutes = pad(nowDateHmin.getMinutes());
 
     // Date du jour (vendredi) à comparer avec le vendredi de la semaine du nouvel an
-    const formattedDate: string = `${day}/${month}/${year}`;
+    //const formattedDate: string = `${day}/${month}/${year}`;
+    const formattedDate: string = `02/01/2026`;
     
     // Date du jour (vendredi) à comparer avec la date du fichier update-dates.json
     const formattedDateHoursMin: string = `${formattedDate} ${hours}:${minutes}`;
@@ -356,7 +357,7 @@ const fetchCMSData = async (): Promise<FetchCMSDataResult> => {
     Lancement de la fonction fetchCMSData() programmé pour 
     chaque vendredi à 08:00 ("0 8 * * 5")
 */
-cron.schedule("*/2 * * * *", async (): Promise<void> => {
+cron.schedule("*/5 * * * *", async (): Promise<void> => {
     const triggerDate = new Date();
     console.log("------ Cron Job lancé ------");
     console.log("Date locale :", triggerDate.toLocaleString("fr-FR", { timeZone: "Europe/Paris" }));
