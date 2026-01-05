@@ -33,18 +33,14 @@ const addDate = async (dataDate) => {
 // LECTURE DE LA DERNIERE VALEUR DANS update-dates.json
 const getLastDate = async () => {
     try {
-        // Vérifie si le fichier existe
         await fs_1.default.promises.access(filePath);
-        // Lit le fichier de manière asynchrone
         const raw = await fs_1.default.promises.readFile(filePath, "utf-8");
         const dates = JSON.parse(raw);
         if (dates.length === 0)
             return null;
-        // Retourne le dernier élément du tableau
         return dates[dates.length - 1];
     }
     catch (err) {
-        // Si le fichier n'existe pas ou si erreur JSON, retourne null
         if (err.code !== "ENOENT") {
             console.error("Erreur lors de la lecture de await getLastDate:", err);
         }
@@ -144,7 +140,7 @@ const handleIdValue = async (itemId, idValue, date, semaine, cours, formattedDat
             if (currentIndex !== -1) {
                 for (let i = currentIndex; i < informations.length; i++) {
                     const nextItem = informations[i];
-                    console.log("!!! Ces dates tombent sur la 1ère semaine vacances !!!", nextItem.itemId, nextItem.idValue, noDates);
+                    console.log("1) Ces dates tombent sur les 2 semaines de vacances !!!", nextItem.itemId, nextItem.idValue, noDates);
                     await updateCMSItem(nextItem.itemId, nextItem.idValue, noDates);
                     return;
                 }
@@ -153,12 +149,12 @@ const handleIdValue = async (itemId, idValue, date, semaine, cours, formattedDat
         }
         else if (Number(yearOfNexDate) !== currentYear) {
             // Génère "--/--/----" pour les jours restants si l'année est différente
-            console.log(`2) MAJ du CMS par idValue ${idValue}: ${nextDate}`, "correspondant à", `Semaine ${semaine}`, cours);
+            console.log("2) Dates après vancances", idValue, nextDate, semaine, cours);
             await updateCMSItem(itemId, idValue, noDates);
         }
         else {
             // MAJ des dates avec nextDate
-            console.log(`2) MAJ du CMS par idValue ${idValue}: ${nextDate}`, "correspondant à", `Semaine ${semaine}`, cours);
+            console.log(`3) MAJ du CMS par idValue ${idValue}: ${nextDate}`, "correspondant à", `Semaine ${semaine}`, cours);
             await updateCMSItem(itemId, idValue, nextDate);
         }
     }
@@ -258,8 +254,7 @@ const fetchCMSData = async () => {
     const hours = pad(nowDateHmin.getHours());
     const minutes = pad(nowDateHmin.getMinutes());
     // Date du jour (vendredi) à comparer avec le vendredi de la semaine du nouvel an
-    //const formattedDate: string = `${day}/${month}/${year}`;
-    const formattedDate = `02/01/2026`;
+    const formattedDate = `${day}/${month}/${year}`;
     // Date du jour (vendredi) à comparer avec la date du fichier update-dates.json
     const formattedDateHoursMin = `${formattedDate} ${hours}:${minutes}`;
     // Date du fichier update-dates.json (vendredi)
@@ -302,7 +297,7 @@ const fetchCMSData = async () => {
     Lancement de la fonction fetchCMSData() programmé pour
     chaque vendredi à 08:00 ("0 8 * * 5")
 */
-node_cron_1.default.schedule("*/5 * * * *", async () => {
+node_cron_1.default.schedule("0 8 * * 5", async () => {
     const triggerDate = new Date();
     console.log("------ Cron Job lancé ------");
     console.log("Date locale :", triggerDate.toLocaleString("fr-FR", { timeZone: "Europe/Paris" }));
