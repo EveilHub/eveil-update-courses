@@ -49,13 +49,27 @@ première semaine de l'année).
 
 nodejs v24.12.0
 
-pnpm 10.26.0
+pnpm 10.27.0
 
 Voir les versions :
 
 `node -v`
 
 `pnpm -v`
+
+Update avec nodejs :
+
+`nvm list`
+
+`nvm install --lts`
+
+`nvm use --lts`
+
+`nvm uninstall vXX.XX.XX`
+
+Update de pnpm :
+
+`pnpm self-update`
 
 Pour le reste, c'est dans le fichier `package.json` que ça se passe.
 
