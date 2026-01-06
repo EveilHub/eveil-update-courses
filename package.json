@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "build": "tsc && cp ./src/utils/update-dates.json ./dist/utils/",
-    "dev": "tsc && nodemon dist/server.js",
+    "dev": "tsc && cp ./src/utils/update-dates.json ./dist/utils/ && nodemon dist/server.js",
     "start": "node dist/server.js"
   },
   "keywords": [],
