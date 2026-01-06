@@ -1,7 +1,7 @@
 # EveilHub API
 
-L'API récupère les dates de cours dans la CMS Collection en fonction par ordre des `idValue`. Une fois que les dates 
-sont MAJ, l'API les retournent à la CMS Collection.
+L'API récupère l'ensemble des data de la CMS Collection de Webflow. Ensuite, les dates sont traitées par l'API pour les
+MAJ. Une fois que les dates sont MAJ, l'API les retournent à la CMS Collection.
 
 Les dates sont MAJ lors de la 8ème semaine de cours, le vendredi à 08:00, grâce au fichier `update-dates.json`, excepté 
 en début d'année (voir ci-dessous).
@@ -9,8 +9,8 @@ en début d'année (voir ci-dessous).
 - MAJ des dates en début d'année
 
 Au début de chaque année, lors du vendredi de la première semaine de l'année, si le vendredi correspond au vendredi de 
-la première semaine de l'année, le code s'exécute et la génération automatique des dates pour les 8 première semaines 
-de l'année a lieu. Une nouvelle date de référence pour la prochaine MAJ est écrite dans le fichier `update-dates.json` 
+la première semaine de l'année, le code s'exécute et la génération automatique des dates, pour les 8 première semaines, 
+de l'année, a lieu. Une nouvelle date de référence pour la prochaine MAJ est écrite dans le fichier `update-dates.json` 
 pour que la MAJ se fasse le vendredi de la 8ème semaine.
 
 - MAJ des dates pour le restant de l'année
@@ -29,8 +29,8 @@ asynchrones de l'API qui se trouvent dans le fichier `server.js`.
 
 `cron.schedule("0 8 * * 5", async () => {})`.
 
-Les dates sont MAJ lors de la 8ème semaines des cours, le vendredi à 08:00. Seul le vendredi de la première semaine 
-de l'année peut générer des nouvelles dates pour les 8 premières semaines de cours de l'année.
+Les dates sont MAJ lors de la 8ème semaines des cours, le vendredi à 08:00. Seul le vendredi, de la première semaine, a 
+la particularité de générer des nouvelles dates pour les 8 premières semaines de cours de l'année.
 
 `const moisActuel: number = aujourdHui.getMonth();`
 
@@ -45,13 +45,40 @@ première semaine de l'année).
 
 ---
 
+## Configuration
+
+nodejs v24.12.0
+
+pnpm 10.26.0
+
+Voir les versions :
+
+`node -v`
+
+`pnpm -v`
+
+Pour le reste, c'est dans le fichier `package.json` que ça se passe.
+
+les fichiers `.node-version` et `.nvmrc` sont des fichiers de configuration pour server. Je voulais utiliser Render, 
+mais j'ai abandonné l'idée (payant pour node-cron). C'est pourquoi j'ai laissé ces fichiers au besoin.
+
+Le fichier `.gitignore` sert à planquer le fichier `.env`.
+
+Le fichier `.env` contient toutes les data servant aux connexions (port et propriétés) avec la CMS Collection.
+
+Le dossier `src` comprends les fichiers au format `.ts` qui sont les fichiers comprenant le code original. Lorsque 
+l'usr lance la CMD `pnpm build` la compilation de ce code donne pour résultat les fichiers au format `.js` se 
+trouvant dans le dossier `dist`.
+
+---
+
 ## En cas de problèmes !!!
 
-`Les modifications se font dans les fichiers.ts en non .js !!!`
+`!!! Les modifications se font dans les fichiers.ts en non .js !!!`
 
-Car les modifications prendront effet après compilation du JavaScript grâce à la CMD :
+Car les modifications prendront effet après compilation du TypeScript en JavaScript grâce à la CMD :
 
-`pnpm run build`
+`pnpm build`
 
 1) Dans la fonction `fetchCMSData()` :
 
@@ -82,9 +109,9 @@ Valeur initiale : `cron.schedule("0 8 * * 5", async (): Promise<void> => {})`;
 
 `npx tsc`
 
-`pnpm run build`
+`pnpm build`
 
-`pnpm run start`
+`pnpm start`
 
 5) Ensuite, effacer la dernière date écrite dans : `update-dates.json`.
 
@@ -129,8 +156,6 @@ Il suffit de modifier la valeur, par exemple:
 
 - Installation
 
-`nodejs`
-
 `git clone https://github.com/EveilHub/eveil-update-courses.git`
 
 `cd eveil-update-courses`
@@ -139,11 +164,19 @@ Il suffit de modifier la valeur, par exemple:
 
 ## Mode PRODUCTION ou DEV (CMD pour lancer l'API)
 
+Utiliser `npx` permet d'éviter les problèmes liés à des versions différentes de TypeScript installées 
+globalement et localement. Recommandé pour éviter les problèmes de version et garantir que le projet 
+utilise la bonne version du compilateur TypeScript.
+
 `npx tsc`
 
-`pnpm run build`
+Compilation des fichiers TypeScript en JavaScript :
 
-`pnpm run start`
+`pnpm build`
+
+Lancement de l'API :
+
+`pnpm start`
 
 ---
 
@@ -165,8 +198,7 @@ Avec les fonction asynchrones en JavaScript moderne.
 
 - Fichier `.env` :
 
-Le fichier `.env` contient toutes les data servant aux connexions (port et propriétés) avec la CMS Collection. Ce 
-fichier est caché sur github grâce au fichier `.gitignore` par mesure de sécurité.
+Ce fichier est caché sur github grâce au fichier `.gitignore` par mesure de sécurité.
 
 - HTTPS pour les connexions :
 
