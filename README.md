@@ -8,10 +8,10 @@ en début d'année (voir ci-dessous).
 
 - MAJ des dates en début d'année
 
-Au début de chaque année, lors du vendredi de la première semaine de l'année, si le vendredi correspond au vendredi de 
-la première semaine de l'année, le code s'exécute et la génération automatique des dates, pour les 8 première semaines, 
-de l'année, a lieu. Une nouvelle date de référence pour la prochaine MAJ est écrite dans le fichier `update-dates.json` 
-pour que la MAJ se fasse le vendredi de la 8ème semaine.
+Au début de chaque année, si le vendredi correspond au vendredi de la première semaine de l'année, le code s'exécute et la 
+génération automatique des dates, pour les 8 première semaines, a lieu. Toutes les précédentes dates servant de MAJ dans le 
+fichier `update-dates.json` sont écrasées et la date pour la prochaine MAJ est inscrite dans ce même fichier 
+(`update-dates.json` ) pour que la MAJ se fasse le vendredi de la 8ème semaine.
 
 - MAJ des dates pour le restant de l'année
 
