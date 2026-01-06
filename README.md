@@ -163,12 +163,7 @@ Il suffit de modifier la valeur, par exemple:
 
 `const moisActuel: number = 2;`
 
-
-7) Dans la console ou le terminal : 
-
-## Lancement
-
-- Installation
+## Installation
 
 `git clone https://github.com/EveilHub/eveil-update-courses.git`
 
@@ -176,7 +171,9 @@ Il suffit de modifier la valeur, par exemple:
 
 `pnpm install`
 
-## Mode PRODUCTION ou DEV (CMD pour lancer l'API)
+## CMD pour lancer l'API
+
+- En mode PROD :
 
 Utiliser `npx` permet d'éviter les problèmes liés à des versions différentes de TypeScript installées 
 globalement et localement. Recommandé pour éviter les problèmes de version et garantir que le projet 
@@ -191,6 +188,12 @@ Compilation des fichiers TypeScript en JavaScript :
 Lancement de l'API :
 
 `pnpm start`
+
+- En mode DEV (avec nodemon pas besoin de restart le server) :
+
+`npx tsc`
+
+`pnpm dev`
 
 ---
 
