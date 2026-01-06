@@ -122,9 +122,9 @@ Lancement de l'API :
 
 ---
 
-## En cas de problèmes !!!
+## !!! En cas de problèmes !!!
 
-`!!! Les modifications se font dans les fichiers.ts en non .js !!!`
+`!!! Les modifications se font dans les fichiers au format .ts et non ceux au format .js !!!`
 
 Car les modifications prendront effet après compilation du TypeScript en JavaScript grâce à la CMD :
 
