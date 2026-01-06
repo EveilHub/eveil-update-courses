@@ -86,6 +86,42 @@ trouvant dans le dossier `dist`.
 
 ---
 
+## Installation
+
+`git clone https://github.com/EveilHub/eveil-update-courses.git`
+
+`cd eveil-update-courses`
+
+`pnpm install`
+
+---
+
+## CMD pour lancer l'API
+
+- En mode PROD :
+
+Utiliser `npx` permet d'éviter les problèmes liés à des versions différentes de TypeScript installées 
+globalement et localement. Recommandé pour éviter les problèmes de version et garantir que le projet 
+utilise la bonne version du compilateur TypeScript.
+
+`npx tsc`
+
+Compilation des fichiers TypeScript en JavaScript :
+
+`pnpm build`
+
+Lancement de l'API :
+
+`pnpm start`
+
+- En mode DEV (avec nodemon pas besoin de restart le server) :
+
+`npx tsc` (en fonction des changements)
+
+`pnpm dev`
+
+---
+
 ## En cas de problèmes !!!
 
 `!!! Les modifications se font dans les fichiers.ts en non .js !!!`
@@ -162,38 +198,6 @@ janvier, les dates générées seront toujours les mêmes !!!
 Il suffit de modifier la valeur, par exemple:
 
 `const moisActuel: number = 2;`
-
-## Installation
-
-`git clone https://github.com/EveilHub/eveil-update-courses.git`
-
-`cd eveil-update-courses`
-
-`pnpm install`
-
-## CMD pour lancer l'API
-
-- En mode PROD :
-
-Utiliser `npx` permet d'éviter les problèmes liés à des versions différentes de TypeScript installées 
-globalement et localement. Recommandé pour éviter les problèmes de version et garantir que le projet 
-utilise la bonne version du compilateur TypeScript.
-
-`npx tsc`
-
-Compilation des fichiers TypeScript en JavaScript :
-
-`pnpm build`
-
-Lancement de l'API :
-
-`pnpm start`
-
-- En mode DEV (avec nodemon pas besoin de restart le server) :
-
-`npx tsc`
-
-`pnpm dev`
 
 ---
 
