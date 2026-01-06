@@ -313,7 +313,7 @@ node_cron_1.default.schedule("0 8 * * 5", async () => {
     timezone: "Europe/Paris",
 });
 // 127.0.0.1/healthz:4000 (lors de requêtes...)
-app.get("/healthz", (req, res) => {
+app.get("/api", (req, res) => {
     res.status(200).send("Eveil API ok !");
 });
 app.listen(PORT, () => {
