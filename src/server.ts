@@ -111,12 +111,12 @@ const handleIdValue = async (
     date: string,
     semaine: string,
     cours: string,
-    formattedDate: string
+    todayDate: string
 ): Promise<void> => {
 
     // Formatage des dates
     const formatData: Date = parseDate(date);
-    const formatDateAujourdHui: Date = parseDate(formattedDate);
+    const formatDateAujourdHui: Date = parseDate(todayDate);
 
     // Date générée avec +63 jours
     let nextDate: string = functionDate(formatData);
@@ -282,22 +282,22 @@ const fetchCMSData = async (): Promise<FetchCMSDataResult> => {
     }
 
     // Fixe la date du jour
-    const nowDateHmin: Date = new Date();
+    const dateNow: Date = new Date();
 
-    // Fn() qui sert à formatter les dates pour ci-dessous
+    // Fn() qui sert à mettre un 0 pour les chiffre entre 0-9 pour les dates ci-dessous
     const pad = (n: number) => String(n).padStart(2, "0");
 
-    const day = pad(nowDateHmin.getDate());
-    const month = pad(nowDateHmin.getMonth() + 1);
-    const year = nowDateHmin.getFullYear();
-    const hours = pad(nowDateHmin.getHours());
-    const minutes = pad(nowDateHmin.getMinutes());
+    const day = pad(dateNow.getDate());
+    const month = pad(dateNow.getMonth() + 1);
+    const year = dateNow.getFullYear();
+    const hours = pad(dateNow.getHours());
+    const minutes = pad(dateNow.getMinutes());
 
     // Date du jour (vendredi) à comparer avec le vendredi de la semaine du nouvel an
-    const formattedDate: string = `${day}/${month}/${year}`;
+    const todayDate: string = `${day}/${month}/${year}`;
     
     // Date du jour (vendredi) à comparer avec la date du fichier update-dates.json
-    const formattedDateHoursMin: string = `${formattedDate} ${hours}:${minutes}`;
+    const todayDateHourMin: string = `${todayDate} ${hours}:${minutes}`;
 
     // Date du fichier update-dates.json (vendredi)
     const lastFridayJsonRecorded: string | null = await getLastDate();
@@ -312,7 +312,7 @@ const fetchCMSData = async (): Promise<FetchCMSDataResult> => {
         à aujourd'hui, ou si le 1er vendredi de l'année correspond à la date 
         d'aujourd'hui => handleIdValue() est appelée.
     */
-    if (formattedDateHoursMin === lastFridayJsonRecorded || formattedDate === secondFridayHoliday) {
+    if (todayDateHourMin === lastFridayJsonRecorded || todayDate === secondFridayHoliday) {
         try {
             informations.sort((a, b) => a.idValue - b.idValue);
             // console.log("informations:", informations);
@@ -328,7 +328,7 @@ const fetchCMSData = async (): Promise<FetchCMSDataResult> => {
                         item.date,
                         item.semaine,
                         item.cours,
-                        formattedDate
+                        todayDate
                     )
                 };
             };
@@ -339,15 +339,13 @@ const fetchCMSData = async (): Promise<FetchCMSDataResult> => {
             return { updated: false, message: `Erreur lors du traitement: ${err.message || err}` };
         }
     } else {
-        console.log("Nothing to update !", formattedDateHoursMin);
+        console.log("Nothing to update !", todayDateHourMin);
         return { updated: false, message: "Rien à mettre à jour aujourd'hui." };
     }
 };
 
-/*
-    Lancement de la fonction fetchCMSData() programmé pour 
-    chaque vendredi à 08:00 ("0 8 * * 5")
-*/
+
+// Lancement de la fonction fetchCMSData() chaque vendredi à 08:00 ("0 8 * * 5")
 cron.schedule("0 8 * * 5", async (): Promise<void> => {
     const triggerDate = new Date();
     console.log("------ Cron Job lancé ------");
@@ -365,7 +363,7 @@ cron.schedule("0 8 * * 5", async (): Promise<void> => {
     }
 );
 
-// test on http://127.0.0.1:4000/api
+// test with http://127.0.0.1:${PORT}/api
 app.get("/api", (req: Request, res: Response) => {
     res.status(200).send("Eveil API OK !");
 });

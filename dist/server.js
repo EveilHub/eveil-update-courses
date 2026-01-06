@@ -91,10 +91,10 @@ const updateCMSItem = async (itemId, idValue, nouvelleDate) => {
 // -----------------------------
 // LOGIQUE TRAITEMENT DES DATES
 // -----------------------------
-const handleIdValue = async (itemId, idValue, date, semaine, cours, formattedDate) => {
+const handleIdValue = async (itemId, idValue, date, semaine, cours, todayDate) => {
     // Formatage des dates
     const formatData = (0, dateUtils_1.parseDate)(date);
-    const formatDateAujourdHui = (0, dateUtils_1.parseDate)(formattedDate);
+    const formatDateAujourdHui = (0, dateUtils_1.parseDate)(todayDate);
     // Date générée avec +63 jours
     let nextDate = (0, dateUtils_1.functionDate)(formatData);
     // Si les dates de nextDate tombent sur les vacances
@@ -245,18 +245,18 @@ const fetchCMSData = async () => {
         return { updated: false, message: `Erreur: ${err.message || err}` };
     }
     // Fixe la date du jour
-    const nowDateHmin = new Date();
-    // Fn() qui sert à formatter les dates pour ci-dessous
+    const dateNow = new Date();
+    // Fn() qui sert à mettre un 0 pour les chiffre entre 0-9 pour les dates ci-dessous
     const pad = (n) => String(n).padStart(2, "0");
-    const day = pad(nowDateHmin.getDate());
-    const month = pad(nowDateHmin.getMonth() + 1);
-    const year = nowDateHmin.getFullYear();
-    const hours = pad(nowDateHmin.getHours());
-    const minutes = pad(nowDateHmin.getMinutes());
+    const day = pad(dateNow.getDate());
+    const month = pad(dateNow.getMonth() + 1);
+    const year = dateNow.getFullYear();
+    const hours = pad(dateNow.getHours());
+    const minutes = pad(dateNow.getMinutes());
     // Date du jour (vendredi) à comparer avec le vendredi de la semaine du nouvel an
-    const formattedDate = `${day}/${month}/${year}`;
+    const todayDate = `${day}/${month}/${year}`;
     // Date du jour (vendredi) à comparer avec la date du fichier update-dates.json
-    const formattedDateHoursMin = `${formattedDate} ${hours}:${minutes}`;
+    const todayDateHourMin = `${todayDate} ${hours}:${minutes}`;
     // Date du fichier update-dates.json (vendredi)
     const lastFridayJsonRecorded = await getLastDate();
     // Instancie le 1er vendredi de l'année qui tombe sur la semaine du nouvel an
@@ -268,14 +268,14 @@ const fetchCMSData = async () => {
         à aujourd'hui, ou si le 1er vendredi de l'année correspond à la date
         d'aujourd'hui => handleIdValue() est appelée.
     */
-    if (formattedDateHoursMin === lastFridayJsonRecorded || formattedDate === secondFridayHoliday) {
+    if (todayDateHourMin === lastFridayJsonRecorded || todayDate === secondFridayHoliday) {
         try {
             informations.sort((a, b) => a.idValue - b.idValue);
             // console.log("informations:", informations);
             for (let idValueToUpdate = 1; idValueToUpdate <= 72; idValueToUpdate++) {
                 const item = informations.find((info) => info.idValue === idValueToUpdate);
                 if (item) {
-                    await handleIdValue(item.itemId, item.idValue, item.date, item.semaine, item.cours, formattedDate);
+                    await handleIdValue(item.itemId, item.idValue, item.date, item.semaine, item.cours, todayDate);
                 }
                 ;
             }
@@ -289,14 +289,11 @@ const fetchCMSData = async () => {
         }
     }
     else {
-        console.log("Nothing to update !", formattedDateHoursMin);
+        console.log("Nothing to update !", todayDateHourMin);
         return { updated: false, message: "Rien à mettre à jour aujourd'hui." };
     }
 };
-/*
-    Lancement de la fonction fetchCMSData() programmé pour
-    chaque vendredi à 08:00 ("0 8 * * 5")
-*/
+// Lancement de la fonction fetchCMSData() chaque vendredi à 08:00 ("0 8 * * 5")
 node_cron_1.default.schedule("0 8 * * 5", async () => {
     const triggerDate = new Date();
     console.log("------ Cron Job lancé ------");
@@ -312,7 +309,7 @@ node_cron_1.default.schedule("0 8 * * 5", async () => {
 }, {
     timezone: "Europe/Paris",
 });
-// test on http://127.0.0.1:4000/api
+// test with http://127.0.0.1:${PORT}/api
 app.get("/api", (req, res) => {
     res.status(200).send("Eveil API OK !");
 });
