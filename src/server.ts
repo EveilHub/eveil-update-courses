@@ -365,9 +365,9 @@ cron.schedule("0 8 * * 5", async (): Promise<void> => {
     }
 );
 
-// 127.0.0.1/healthz:4000 (lors de requêtes...)
+// test on http://127.0.0.1:4000/api
 app.get("/api", (req: Request, res: Response) => {
-    res.status(200).send("Eveil API ok !");
+    res.status(200).send("Eveil API OK !");
 });
 
 app.listen(PORT, () => {

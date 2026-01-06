@@ -312,9 +312,9 @@ node_cron_1.default.schedule("0 8 * * 5", async () => {
 }, {
     timezone: "Europe/Paris",
 });
-// 127.0.0.1/healthz:4000 (lors de requêtes...)
+// test on http://127.0.0.1:4000/api
 app.get("/api", (req, res) => {
-    res.status(200).send("Eveil API ok !");
+    res.status(200).send("Eveil API OK !");
 });
 app.listen(PORT, () => {
     console.log(`Serveur en cours d'exécution sur le PORT: ${PORT}`);
