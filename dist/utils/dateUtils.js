@@ -22,8 +22,8 @@ const formatUpdateFriday = (update) => {
     const newDate = new Date(update);
     newDate.setDate(newDate.getDate() + 56);
     newDate.setHours(newDate.getHours() + 8);
-    // Ajuster pour tomber sur vendredi (5 en JS, 0 = dimanche)
-    const dayOfWeek = newDate.getDay(); // 0 = dimanche ... 5 = vendredi
+    // Ajuster pour tomber sur vendredi (5 en JS)
+    const dayOfWeek = newDate.getDay();
     const daysToFriday = (5 - dayOfWeek + 7) % 7;
     newDate.setDate(newDate.getDate() + daysToFriday);
     const nextDates = [
@@ -97,9 +97,8 @@ const deuxDernieresSemaines = (annee) => {
 };
 exports.deuxDernieresSemaines = deuxDernieresSemaines;
 /*
-    Génère des dates pour les 8 première semaines,
-    chaque nouvelle année après la première semaine
-    du nouvel an.
+    Génère des dates pour les 8 première semaines, chaque nouvelle année après
+    la première semaine du nouvel an.
 */
 const generateCourseDates = (year) => {
     // Fonction pour obtenir le premier lundi de l'année donnée
@@ -114,16 +113,17 @@ const generateCourseDates = (year) => {
     // Fonction pour formater la date au format "jj/mm/aaaa"
     const formatDateGenerated = (date) => {
         const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Les mois commencent à 0 en JavaScript
+        const month = String(date.getMonth() + 1).padStart(2, '0');
         const year = date.getFullYear();
         return `${day}/${month}/${year}`;
     };
-    let startDate = getFirstMondayOfYear(year); // Obtenez le premier lundi après le Nouvel An
+    // Obtenez le premier lundi après le Nouvel An
+    let startDate = getFirstMondayOfYear(year);
     let courses = [];
     // Générer les dates pour 8 semaines
     for (let week = 0; week < 8; week++) {
         let weekStartDate = new Date(startDate); // Cloner la date du premier lundi
-        weekStartDate.setDate(startDate.getDate() + (week * 7)); // Ajouter 7 jours pour chaque nouvelle semaine
+        weekStartDate.setDate(startDate.getDate() + (week * 7));
         // Lundi : 3 cours à la même date (3x)
         let mondayCourseDate = new Date(weekStartDate);
         for (let i = 0; i < 3; i++) {
@@ -131,19 +131,19 @@ const generateCourseDates = (year) => {
         }
         // Mardi : 2 cours à la même date (2x)
         let tuesdayCourseDate = new Date(weekStartDate);
-        tuesdayCourseDate.setDate(weekStartDate.getDate() + 1); // Mardi
+        tuesdayCourseDate.setDate(weekStartDate.getDate() + 1);
         for (let i = 0; i < 2; i++) {
             courses.push({ day: 'Mardi', date: formatDateGenerated(tuesdayCourseDate) });
         }
         // Mercredi : 2 cours à la même date (2x)
         let wednesdayCourseDate = new Date(weekStartDate);
-        wednesdayCourseDate.setDate(weekStartDate.getDate() + 2); // Mercredi
+        wednesdayCourseDate.setDate(weekStartDate.getDate() + 2);
         for (let i = 0; i < 2; i++) {
             courses.push({ day: 'Mercredi', date: formatDateGenerated(wednesdayCourseDate) });
         }
         // Jeudi : 2 cours à la même date (2x)
         let thursdayCourseDate = new Date(weekStartDate);
-        thursdayCourseDate.setDate(weekStartDate.getDate() + 3); // Jeudi
+        thursdayCourseDate.setDate(weekStartDate.getDate() + 3);
         for (let i = 0; i < 2; i++) {
             courses.push({ day: 'Jeudi', date: formatDateGenerated(thursdayCourseDate) });
         }

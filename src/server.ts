@@ -13,7 +13,7 @@ import {
 import type { 
     DataType, 
     ItemsType, 
-    InformationsType, 
+    InformationsType,
     EndDatesYearsTypes, 
     FetchCMSDataResult,
     WebflowPublishResponse 
@@ -344,7 +344,6 @@ const fetchCMSData = async (): Promise<FetchCMSDataResult> => {
     }
 };
 
-
 // Lancement de la fonction fetchCMSData() chaque vendredi à 08:00 ("0 8 * * 5")
 cron.schedule("0 8 * * 5", async (): Promise<void> => {
     const triggerDate = new Date();
@@ -363,7 +362,7 @@ cron.schedule("0 8 * * 5", async (): Promise<void> => {
     }
 );
 
-// test with http://127.0.0.1:${PORT}/api
+// http://127.0.0.1:${PORT}/api a tester lors de MAJ
 app.get("/api", (req: Request, res: Response) => {
     res.status(200).send("Eveil API OK !");
 });

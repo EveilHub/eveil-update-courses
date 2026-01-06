@@ -309,7 +309,7 @@ node_cron_1.default.schedule("0 8 * * 5", async () => {
 }, {
     timezone: "Europe/Paris",
 });
-// test with http://127.0.0.1:${PORT}/api
+// http://127.0.0.1:${PORT}/api a tester lors de MAJ
 app.get("/api", (req, res) => {
     res.status(200).send("Eveil API OK !");
 });
