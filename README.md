@@ -137,6 +137,12 @@ trouvant dans le dossier `dist`.
 
 ---
 
+- VsCode comme IDE
+
+Utile pour le TypeScript et pour l'dentification d'éventuelles erreurs.
+
+---
+
 ## Téléversement des modifications sur GitHub
 
 Une fois avoir enregistré les modifications apportées au projet, il est important de connaître les 
