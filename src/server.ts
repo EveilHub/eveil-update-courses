@@ -131,7 +131,11 @@ const handleIdValue = async (
         de la semaine du nouvel an. Soit 1 semaine avant
         la génération des dates pour les 8 semaines.
     */
-    const currentYear: number = new Date().getFullYear();
+
+    const aujourdHui: Date = new Date();
+    const moisActuel: number = aujourdHui.getMonth();
+    const currentYear: number = aujourdHui.getFullYear();
+
     let coursesForStartYear: {day: string, date: string}[] = generateCourseDates(currentYear);
 
     /*
@@ -141,12 +145,8 @@ const handleIdValue = async (
     const lastWeeksPerYear: EndDatesYearsTypes = deuxDernieresSemaines(currentYear);
     const holidays: string[] = Object.values(lastWeeksPerYear).flatMap((week) => Object.values(week));
     const verifyHolidays: boolean = holidays.includes(nextDate);
-    
-    // Détermine si on est en janvier
-    const aujourdHui: Date = new Date();
-    const moisActuel: number = aujourdHui.getMonth();
 
-    // Détermine l'année
+    // Split l'année de nextDate
     let parts: string[] = nextDate.split("/");
     let yearOfNexDate: string = parts[2]; 
 
@@ -295,7 +295,7 @@ const fetchCMSData = async (): Promise<FetchCMSDataResult> => {
 
     // Date du jour (vendredi) à comparer avec le vendredi de la semaine du nouvel an
     const todayDate: string = `${day}/${month}/${year}`;
-    
+
     // Date du jour (vendredi) à comparer avec la date du fichier update-dates.json
     const todayDateHourMin: string = `${todayDate} ${hours}:${minutes}`;
 
@@ -344,7 +344,8 @@ const fetchCMSData = async (): Promise<FetchCMSDataResult> => {
     }
 };
 
-// Lancement de la fonction fetchCMSData() chaque vendredi à 08:00 ("0 8 * * 5")
+// Lancement de fetchCMSData() chaque vendredi à 08:00 ("0 8 * * 5")
+// Pour lancer fetchCMSData() toutes les 2 min : ("*/2 * * * *")
 cron.schedule("0 8 * * 5", async (): Promise<void> => {
     const triggerDate = new Date();
     console.log("------ Cron Job lancé ------");
@@ -362,7 +363,7 @@ cron.schedule("0 8 * * 5", async (): Promise<void> => {
     }
 );
 
-// http://127.0.0.1:${PORT}/api a tester lors de MAJ
+// http://127.0.0.1:${PORT}/api a tester après une MAJ
 app.get("/api", (req: Request, res: Response) => {
     res.status(200).send("Eveil API OK !");
 });

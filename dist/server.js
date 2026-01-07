@@ -107,7 +107,9 @@ const handleIdValue = async (itemId, idValue, date, semaine, cours, todayDate) =
         de la semaine du nouvel an. Soit 1 semaine avant
         la génération des dates pour les 8 semaines.
     */
-    const currentYear = new Date().getFullYear();
+    const aujourdHui = new Date();
+    const moisActuel = aujourdHui.getMonth();
+    const currentYear = aujourdHui.getFullYear();
     let coursesForStartYear = (0, dateUtils_1.generateCourseDates)(currentYear);
     /*
         Calcul des 2 dernières semaines de l'année en cours.
@@ -116,10 +118,7 @@ const handleIdValue = async (itemId, idValue, date, semaine, cours, todayDate) =
     const lastWeeksPerYear = (0, dateUtils_1.deuxDernieresSemaines)(currentYear);
     const holidays = Object.values(lastWeeksPerYear).flatMap((week) => Object.values(week));
     const verifyHolidays = holidays.includes(nextDate);
-    // Détermine si on est en janvier
-    const aujourdHui = new Date();
-    const moisActuel = aujourdHui.getMonth();
-    // Détermine l'année
+    // Split l'année de nextDate
     let parts = nextDate.split("/");
     let yearOfNexDate = parts[2];
     if ((moisActuel === 0) && (idValue === 1)) {
@@ -293,7 +292,8 @@ const fetchCMSData = async () => {
         return { updated: false, message: "Rien à mettre à jour aujourd'hui." };
     }
 };
-// Lancement de la fonction fetchCMSData() chaque vendredi à 08:00 ("0 8 * * 5")
+// Lancement de fetchCMSData() chaque vendredi à 08:00 ("0 8 * * 5")
+// Pour lancer fetchCMSData() toutes les 2 min : ("*/2 * * * *")
 node_cron_1.default.schedule("0 8 * * 5", async () => {
     const triggerDate = new Date();
     console.log("------ Cron Job lancé ------");
@@ -309,7 +309,7 @@ node_cron_1.default.schedule("0 8 * * 5", async () => {
 }, {
     timezone: "Europe/Paris",
 });
-// http://127.0.0.1:${PORT}/api a tester lors de MAJ
+// http://127.0.0.1:${PORT}/api a tester après une MAJ
 app.get("/api", (req, res) => {
     res.status(200).send("Eveil API OK !");
 });
