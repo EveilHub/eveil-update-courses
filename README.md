@@ -59,7 +59,7 @@ première semaine de l'année).
 
 ## CMD pour lancer l'API
 
-- En mode DEV (avec nodemon pas besoin de restart le server) :
+- En mode DEV (avec nodemon pas besoin de redémarrer le server après chaque modification) :
 
 `pnpm dev`
 
