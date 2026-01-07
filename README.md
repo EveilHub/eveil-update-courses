@@ -46,6 +46,16 @@ première semaine de l'année).
 
 ---
 
+## Installation
+
+`git clone https://github.com/EveilHub/eveil-update-courses.git`
+
+`cd eveil-update-courses`
+
+`pnpm install`
+
+---
+
 ## CMD pour lancer l'API
 
 - En mode PROD :
@@ -69,16 +79,6 @@ Lancement de l'API :
 `npx tsc` (en fonction des changements apportés à l'app)
 
 `pnpm dev`
-
----
-
-## Installation
-
-`git clone https://github.com/EveilHub/eveil-update-courses.git`
-
-`cd eveil-update-courses`
-
-`pnpm install`
 
 ---
 
@@ -139,20 +139,20 @@ trouvant dans le dossier `dist`.
 
 ---
 
-## Modifications - Sauvegardes et Téléversement des modifications sur GitHub
+## Téléversement des modifications sur GitHub
 
 Une fois avoir enregistré les modifications apportées au projet, il est important de connaître les 
 CMD de `git` pour les déposer sur le repository de `GitHub` :
 
-Voir les fichiers modifier :
+Voir les modifications :
 
 `git status`
 
-Ajouter les fichiers modifiés pour un commit :
+Ajouter les modif pour un commit :
 
 `git add <nom_du_fichier>`
 
-Ou pour commiter tous les fichiers en même temps :
+Ou pour commiter tous les modif en même temps :
 
 `git add .`
 
@@ -160,7 +160,7 @@ Puis faire le commit :
 
 `git -m "le commentaire à laisser"`
 
-Pousser les fichiers sur GitHub :
+Pousser les modif apportées à l'app sur GitHub :
 
 `git push -u origin`
 
