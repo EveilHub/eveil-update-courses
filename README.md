@@ -132,8 +132,8 @@ Le fichier `.env` contient toutes les data servant aux connexions (port et propr
 - src et dist
 
 Le dossier `src` comprends les fichiers au format `.ts` qui sont les fichiers comprenant le code original. Lorsque 
-l'usr lance la CMD `pnpm build` la compilation de ce code donne pour résultat les fichiers au format `.js` se 
-trouvant dans le dossier `dist`.
+l'utilisateur lance la CMD `pnpm build` la compilation du TS en JS donne pour résultat les fichiers au format `.js` 
+se trouvant dans le dossier `dist`.
 
 ---
 
