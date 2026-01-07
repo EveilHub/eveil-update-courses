@@ -58,6 +58,10 @@ première semaine de l'année).
 
 ## CMD pour lancer l'API
 
+- En mode DEV (avec nodemon pas besoin de restart le server) :
+
+`pnpm dev`
+
 - En mode PROD :
 
 Utiliser `npx` permet d'éviter les problèmes liés à des versions différentes de TypeScript installées 
@@ -66,19 +70,13 @@ utilise la bonne version du compilateur TypeScript.
 
 `npx tsc` (en fonction des changements apportés à l'app)
 
-Compilation des fichiers TypeScript en JavaScript :
+1) Compilation des fichiers TypeScript en JavaScript :
 
 `pnpm build`
 
-Lancement de l'API :
+2) Lancement de l'API :
 
 `pnpm start`
-
-- En mode DEV (avec nodemon pas besoin de restart le server) :
-
-`npx tsc` (en fonction des changements apportés à l'app)
-
-`pnpm dev`
 
 ---
 
@@ -195,13 +193,11 @@ const secondFridayHoliday: string = `02/01/2026`;
 
 `cron.schedule("*/2 * * * *", async (): Promise<void> => {})`
 
-Valeur initiale : `cron.schedule("0 8 * * 5", async (): Promise<void> => {})`;
+Valeur initiale : `cron.schedule("0 8 * * 5", async (): Promise<void> => {});`
 
 3) Mettre la date du jour manuellement dans `update-dates.json`.
 
 4) Dans la console, lancé les CMD suivantes : 
-
-`npx tsc` (pas forcément nécessaire)
 
 `pnpm build`
 
@@ -213,7 +209,7 @@ Valeur initiale : `cron.schedule("0 8 * * 5", async (): Promise<void> => {})`;
 
 `const moisActuel: number = 0;`
 
-Il est possible que le mois `0` pose problème, principalement au mois de janvier.
+Il est possible que le mois `0` pose problème, principalement si on teste l'api au mois de janvier...
 En effet, la MAJ se faisant qu'une seule fois durant ce mois, il se peut qu'en utilisant l'API en mode DEV,
 au mois de janvier, la condition :
 
@@ -237,9 +233,9 @@ au mois de janvier, la condition :
 ```
 
 pose problème, puisqu'elle sert à générer des nouvelles dates. A chanque lancement de l'API au mois de 
-janvier, les dates générées seront toujours les mêmes !!!
+janvier, les dates générées seront toujours celles qui sont générées pour l'année concernée !!!
 
-Il suffit de modifier la valeur, par exemple:
+Pour remédier au problème, il suffit de modifier provisoirement la valeur de `moisActuel`:
 
 `const moisActuel: number = 2;`
 
@@ -257,14 +253,28 @@ Avec les fonction asynchrones en JavaScript moderne.
 
 - Fichier `.env` :
 
-Ce fichier est caché sur github grâce au fichier `.gitignore` par mesure de sécurité.
+Ce fichier n'est pas téléversé sur GitHub grâce au fichier `.gitignore` par mesure de sécurité.
 
 - HTTPS pour les connexions :
 
 Pas besoins de https, car ce n'est pas un site web, mais une API. Aussi ce n'est pas accessible par un utilisateur
 sur un nom de domaine ou par interface ou navigateur (pas d'interractions).
 
-- Particularités :
+- CORS
+
+Si le server était exposé au frontend, il faudrait utiliser les CORS !
+Mais puisque les utilisateurs n'ont pas accès, on en n'a pas besoin.
+
+```
+app.use((req: Request, res: Response, next: NextType) => {
+  res.setHeader("Access-Control-Allow-Origin", "*"); 
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  next();
+});
+```
+
+- Particularités Webflow avec `id-value` et `id_value` :
 
 ```
   id-value correspond à l'id_value de la CMS Collection.
@@ -272,17 +282,4 @@ sur un nom de domaine ou par interface ou navigateur (pas d'interractions).
   C'est parfait pour la sécurité !!!
   Il faut utiliser Number(item.fieldData["id-value"]), 
   dans ce cas !
-```
-
-Si le server serait exposer au frontend, il faudrait utiliser les CORS !
-Mais puisque les utilisateurs n'ont pas accès, on en n'a pas besoin.
-
-```
-//accepter les ressources pour afficher des data sur page de webflow
-app.use((req: Request, res: Response, next: NextType) => {
-  res.setHeader("Access-Control-Allow-Origin", "*"); 
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  next();
-});
 ```
