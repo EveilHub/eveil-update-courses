@@ -111,6 +111,8 @@ const handleIdValue = async (
     date: string,
     semaine: string,
     cours: string,
+    month: string,
+    currentYear: number,
     todayDate: string
 ): Promise<void> => {
 
@@ -124,6 +126,8 @@ const handleIdValue = async (
     const noDates: string = "--/--/----";
     // Update le vendredi de la 8ème semaine, à 08:00
     const update: string = formatUpdateFriday(formatDateAujourdHui);
+    // Conversion string en number
+    const moisActuel: number = Number(month);
 
     /*
         Génère des dates pour les 8ère semaines de l'année
@@ -131,11 +135,6 @@ const handleIdValue = async (
         de la semaine du nouvel an. Soit 1 semaine avant
         la génération des dates pour les 8 semaines.
     */
-
-    const aujourdHui: Date = new Date();
-    const moisActuel: number = aujourdHui.getMonth();
-    const currentYear: number = aujourdHui.getFullYear();
-
     let coursesForStartYear: {day: string, date: string}[] = generateCourseDates(currentYear);
 
     /*
@@ -288,13 +287,14 @@ const fetchCMSData = async (): Promise<FetchCMSDataResult> => {
     const pad = (n: number) => String(n).padStart(2, "0");
 
     const day = pad(dateNow.getDate());
-    const month = pad(dateNow.getMonth() + 1);
-    const year = dateNow.getFullYear();
+    const month = pad(dateNow.getMonth());
+    const monthAdded = pad(dateNow.getMonth() + 1);
+    const currentYear = dateNow.getFullYear();
     const hours = pad(dateNow.getHours());
     const minutes = pad(dateNow.getMinutes());
 
     // Date du jour (vendredi) à comparer avec le vendredi de la semaine du nouvel an
-    const todayDate: string = `${day}/${month}/${year}`;
+    const todayDate: string = `${day}/${monthAdded}/${currentYear}`;
 
     // Date du jour (vendredi) à comparer avec la date du fichier update-dates.json
     const todayDateHourMin: string = `${todayDate} ${hours}:${minutes}`;
@@ -303,7 +303,6 @@ const fetchCMSData = async (): Promise<FetchCMSDataResult> => {
     const lastFridayJsonRecorded: string | null = await getLastDate();
 
     // Instancie le 1er vendredi de l'année qui tombe sur la semaine du nouvel an
-    const currentYear: number = new Date().getFullYear();
     const lastWeeksPerYear: EndDatesYearsTypes = deuxDernieresSemaines(currentYear);
     const secondFridayHoliday: string = lastWeeksPerYear.derniereSemaine.vendredi;
 
@@ -328,6 +327,8 @@ const fetchCMSData = async (): Promise<FetchCMSDataResult> => {
                         item.date,
                         item.semaine,
                         item.cours,
+                        month,
+                        currentYear,
                         todayDate
                     )
                 };

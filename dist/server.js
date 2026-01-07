@@ -91,7 +91,7 @@ const updateCMSItem = async (itemId, idValue, nouvelleDate) => {
 // -----------------------------
 // LOGIQUE TRAITEMENT DES DATES
 // -----------------------------
-const handleIdValue = async (itemId, idValue, date, semaine, cours, todayDate) => {
+const handleIdValue = async (itemId, idValue, date, semaine, cours, month, currentYear, todayDate) => {
     // Formatage des dates
     const formatData = (0, dateUtils_1.parseDate)(date);
     const formatDateAujourdHui = (0, dateUtils_1.parseDate)(todayDate);
@@ -101,15 +101,14 @@ const handleIdValue = async (itemId, idValue, date, semaine, cours, todayDate) =
     const noDates = "--/--/----";
     // Update le vendredi de la 8ème semaine, à 08:00
     const update = (0, dateUtils_1.formatUpdateFriday)(formatDateAujourdHui);
+    // Conversion string en number
+    const moisActuel = Number(month);
     /*
         Génère des dates pour les 8ère semaines de l'année
         pour n'importe quelle année, à partir du vendredi
         de la semaine du nouvel an. Soit 1 semaine avant
         la génération des dates pour les 8 semaines.
     */
-    const aujourdHui = new Date();
-    const moisActuel = aujourdHui.getMonth();
-    const currentYear = aujourdHui.getFullYear();
     let coursesForStartYear = (0, dateUtils_1.generateCourseDates)(currentYear);
     /*
         Calcul des 2 dernières semaines de l'année en cours.
@@ -248,18 +247,18 @@ const fetchCMSData = async () => {
     // Fn() qui sert à mettre un 0 pour les chiffre entre 0-9 pour les dates ci-dessous
     const pad = (n) => String(n).padStart(2, "0");
     const day = pad(dateNow.getDate());
-    const month = pad(dateNow.getMonth() + 1);
-    const year = dateNow.getFullYear();
+    const month = pad(dateNow.getMonth());
+    const monthAdded = pad(dateNow.getMonth() + 1);
+    const currentYear = dateNow.getFullYear();
     const hours = pad(dateNow.getHours());
     const minutes = pad(dateNow.getMinutes());
     // Date du jour (vendredi) à comparer avec le vendredi de la semaine du nouvel an
-    const todayDate = `${day}/${month}/${year}`;
+    const todayDate = `${day}/${monthAdded}/${currentYear}`;
     // Date du jour (vendredi) à comparer avec la date du fichier update-dates.json
     const todayDateHourMin = `${todayDate} ${hours}:${minutes}`;
     // Date du fichier update-dates.json (vendredi)
     const lastFridayJsonRecorded = await getLastDate();
     // Instancie le 1er vendredi de l'année qui tombe sur la semaine du nouvel an
-    const currentYear = new Date().getFullYear();
     const lastWeeksPerYear = (0, dateUtils_1.deuxDernieresSemaines)(currentYear);
     const secondFridayHoliday = lastWeeksPerYear.derniereSemaine.vendredi;
     /*
@@ -274,7 +273,7 @@ const fetchCMSData = async () => {
             for (let idValueToUpdate = 1; idValueToUpdate <= 72; idValueToUpdate++) {
                 const item = informations.find((info) => info.idValue === idValueToUpdate);
                 if (item) {
-                    await handleIdValue(item.itemId, item.idValue, item.date, item.semaine, item.cours, todayDate);
+                    await handleIdValue(item.itemId, item.idValue, item.date, item.semaine, item.cours, month, currentYear, todayDate);
                 }
                 ;
             }
