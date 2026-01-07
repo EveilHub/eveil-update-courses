@@ -35,7 +35,8 @@ la particularité de générer des nouvelles dates pour les 8 premières semaine
 `const moisActuel: number = aujourdHui.getMonth();`
 
 Si `moisActuel === 0`, alors nous sommes en janvier (0 = janvier en JavaScript) et il faut générer des nouvelles dates, 
-plutôt que de reprendre les anciennes de la CMS Collection pour les actualiser.
+plutôt que de reprendre les anciennes de la CMS Collection pour les actualiser. Toutes les dates de MAJ précédentes
+seront effacées dans le fichier `update-dates.json`.
 
 Si `moisActuel > 0`, alors la MAJ des dates se fait toutes les 8 semaines de cours, le vendredi. 
 
@@ -45,44 +46,29 @@ première semaine de l'année).
 
 ---
 
-## Configuration
+## CMD pour lancer l'API
 
-nodejs v24.12.0
+- En mode PROD :
 
-pnpm 10.27.0
+Utiliser `npx` permet d'éviter les problèmes liés à des versions différentes de TypeScript installées 
+globalement et localement. Recommandé pour éviter les problèmes de version et garantir que le projet 
+utilise la bonne version du compilateur TypeScript.
 
-Voir les versions :
+`npx tsc` (en fonction des changements apportés à l'app)
 
-`node -v`
+Compilation des fichiers TypeScript en JavaScript :
 
-`pnpm -v`
+`pnpm build`
 
-Update avec nodejs :
+Lancement de l'API :
 
-`nvm list`
+`pnpm start`
 
-`nvm install --lts`
+- En mode DEV (avec nodemon pas besoin de restart le server) :
 
-`nvm use --lts`
+`npx tsc` (en fonction des changements apportés à l'app)
 
-`nvm uninstall vXX.XX.XX`
-
-Update de pnpm :
-
-`pnpm self-update`
-
-Pour le reste, c'est dans le fichier `package.json` que ça se passe.
-
-les fichiers `.node-version` et `.nvmrc` sont des fichiers de configuration pour server. Je voulais utiliser Render, 
-mais j'ai abandonné l'idée (payant pour node-cron). C'est pourquoi j'ai laissé ces fichiers au besoin.
-
-Le fichier `.gitignore` sert à planquer le fichier `.env`.
-
-Le fichier `.env` contient toutes les data servant aux connexions (port et propriétés) avec la CMS Collection.
-
-Le dossier `src` comprends les fichiers au format `.ts` qui sont les fichiers comprenant le code original. Lorsque 
-l'usr lance la CMD `pnpm build` la compilation de ce code donne pour résultat les fichiers au format `.js` se 
-trouvant dans le dossier `dist`.
+`pnpm dev`
 
 ---
 
@@ -96,29 +82,87 @@ trouvant dans le dossier `dist`.
 
 ---
 
-## CMD pour lancer l'API
+## Configuration
 
-- En mode PROD :
+- pnpm :
 
-Utiliser `npx` permet d'éviter les problèmes liés à des versions différentes de TypeScript installées 
-globalement et localement. Recommandé pour éviter les problèmes de version et garantir que le projet 
-utilise la bonne version du compilateur TypeScript.
+Version améliorée de `npm` (node package manager). Evite les éventuels conflits.
 
-`npx tsc`
+- Voir la version :
 
-Compilation des fichiers TypeScript en JavaScript :
+`pnpm -v`
 
-`pnpm build`
+- Update de pnpm :
 
-Lancement de l'API :
+`pnpm self-update`
 
-`pnpm start`
+---
 
-- En mode DEV (avec nodemon pas besoin de restart le server) :
+La version actuelle de `Nodejs` est la dernière lts (long term support).
 
-`npx tsc` (en fonction des changements)
+- Voir la version :
 
-`pnpm dev`
+`node -v`
+
+- Update avec nodejs :
+
+`nvm list`
+
+`nvm install --lts`
+
+`nvm use --lts`
+
+`nvm uninstall vXX.XX.XX`
+
+---
+
+Pour les modules, dépendances et CMD, c'est dans le fichier `package.json` que ça se passe.
+
+les fichiers `.node-version` et `.nvmrc` sont des fichiers de configuration pour server. Je voulais utiliser Render, 
+mais j'ai abandonné l'idée (payant pour node-cron). C'est pourquoi j'ai laissé ces fichiers au besoin.
+
+---
+
+- Fichier .env & .gitignore
+
+Le fichier `.gitignore` sert à cacher le fichier `.env`, afin que `git` ne le téléverse pas sur `GitHub`.
+
+Le fichier `.env` contient toutes les data servant aux connexions (port et propriétés) avec la CMS Collection.
+
+---
+
+- src et dist
+
+Le dossier `src` comprends les fichiers au format `.ts` qui sont les fichiers comprenant le code original. Lorsque 
+l'usr lance la CMD `pnpm build` la compilation de ce code donne pour résultat les fichiers au format `.js` se 
+trouvant dans le dossier `dist`.
+
+---
+
+## Modifications - Sauvegardes et Téléversement des modifications sur GitHub
+
+Une fois avoir enregistré les modifications apportées au projet, il est important de connaître les 
+CMD de `git` pour les déposer sur le repository de `GitHub` :
+
+Voir les fichiers modifier :
+
+`git status`
+
+Ajouter les fichiers modifiés pour un commit :
+
+`git add <nom_du_fichier>`
+
+Ou pour commiter tous les fichiers en même temps :
+
+`git add .`
+
+Puis faire le commit :
+
+`git -m "le commentaire à laisser"`
+
+Pousser les fichiers sur GitHub :
+
+`git push -u origin`
 
 ---
 
@@ -157,7 +201,7 @@ Valeur initiale : `cron.schedule("0 8 * * 5", async (): Promise<void> => {})`;
 
 4) Dans la console, lancé les CMD suivantes : 
 
-`npx tsc`
+`npx tsc` (pas forcément nécessaire)
 
 `pnpm build`
 
@@ -202,12 +246,6 @@ Il suffit de modifier la valeur, par exemple:
 ---
 
 ## Sécurité
-
-Malgré qu'aucune donnée sensible ne soit partagée, il y quand même une sécurité présente.
-
-- pnpm :
-
-node package manager, mais sans les conflits rencontrés avec npm.
 
 - TypeScript => fichier `types.ts` :
 
