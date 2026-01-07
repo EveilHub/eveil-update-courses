@@ -35,10 +35,11 @@ la particularité de générer des nouvelles dates pour les 8 premières semaine
 `const moisActuel: number = aujourdHui.getMonth();`
 
 Si `moisActuel === 0`, alors nous sommes en janvier (0 = janvier en JavaScript) et il faut générer des nouvelles dates, 
-plutôt que de reprendre les anciennes de la CMS Collection pour les actualiser. Toutes les dates de MAJ précédentes
-seront effacées dans le fichier `update-dates.json`.
+plutôt que de reprendre les anciennes de la CMS Collection pour les actualiser. Dans le fichier `update-dates.json`, 
+toutes les dates ayant servi aux MAJ précédentes sont effacées.
 
-Si `moisActuel > 0`, alors la MAJ des dates se fait toutes les 8 semaines de cours, le vendredi. 
+Si `moisActuel > 0`, alors la MAJ des dates se fait toutes les 8 semaines de cours, le vendredi. Une nouvelle date de 
+MAJ est écrite dans le fichier `update-dates.json`.
 
 Durant les 2 dernières semaines de l'année, qui sont des semaines de vacances, les dates sont notées sous la forme 
 de `"--/--/----"`, jusqu'à la 8ème semaine (puisque des nouvelles dates seront générées à partir du vendredi de la 
